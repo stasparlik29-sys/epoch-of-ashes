@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Карты — Эпоха Пепла</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+<div class="page-screen">
+
+  <nav class="page-nav">
+    <a href="../index.html">Главная</a>
+    <a href="world.html">Мир</a>
+    <a href="cities.html">Города</a>
+    <a href="characters.html">Персонажи</a>
+    <a href="locations.html">Локации</a>
+    <a href="maps.html" class="active">Карты</a>
+    <a href="quests.html">Квесты</a>
+    <a href="journal.html">Журнал</a>
+    <a href="bestiary.html">Бестиарий</a>
+    <a href="dice.html">Кубики</a>
+  </nav>
+
+  <header class="page-header">
+    <h1>Карты</h1>
+    <p>Города, подземелья, храмы, таверны и боевые сцены кампании.</p>
+  </header>
+
+  <section class="maps-grid">
+
+    <article class="map-card" data-image="../assets/Maps/baarm-map.jpg" data-title="Баарм">
+      <img src="../assets/Maps/baarm-map.jpg" alt="Баарм">
+      <div class="map-card-info">
+        <span>Город</span>
+        <h2>Баарм</h2>
+        <p>Главный город кампании.</p>
+      </div>
+    </article>
+
+    <article class="map-card" data-image="../assets/Maps/ash-temple.jpg" data-title="Храм Пепла">
+      <img src="../assets/Maps/ash-temple.jpg" alt="Храм Пепла">
+      <div class="map-card-info">
+        <span>Храм</span>
+        <h2>Храм Пепла</h2>
+        <p>Святилище, где древний огонь до сих пор не погас.</p>
+      </div>
+    </article>
+
+    <article class="map-card" data-image="../assets/Maps/lions-claws.png" data-title="Львиные Когти">
+      <img src="../assets/Maps/lions-claws.png" alt="Львиные Когти">
+      <div class="map-card-info">
+        <span>Таверна</span>
+        <h2>Львиные Когти</h2>
+        <p>Любимое место авантюристов Баарма.</p>
+      </div>
+    </article>
+
+  </section>
+
+</div>
+
+<div class="map-modal" id="mapModal">
+  <button class="map-modal-close" id="mapModalClose">×</button>
+  <h2 id="mapModalTitle"></h2>
+  <img id="mapModalImage" src="" alt="">
+</div>
+
+<script src="../script.js"></script>
+</body>
+</html>

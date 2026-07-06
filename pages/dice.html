@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Кубики — Эпоха Пепла</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+<div class="page-screen">
+
+  <nav class="page-nav">
+    <a href="../index.html">Главная</a>
+    <a href="world.html">Мир</a>
+    <a href="cities.html">Города</a>
+    <a href="characters.html">Персонажи</a>
+    <a href="locations.html">Локации</a>
+    <a href="maps.html">Карты</a>
+    <a href="quests.html">Квесты</a>
+    <a href="journal.html">Журнал</a>
+    <a href="bestiary.html">Бестиарий</a>
+    <a href="dice.html" class="active">Кубики</a>
+  </nav>
+
+  <header class="page-header">
+    <h1>Кубики</h1>
+    <p>Броски для игровых сессий прямо внутри кодекса.</p>
+  </header>
+
+  <main class="dice-layout">
+
+    <section class="dice-panel">
+      <h2>Бросок кости</h2>
+
+      <div class="dice-result" id="diceResult">20</div>
+
+      <div class="dice-buttons">
+        <button data-dice="4">d4</button>
+        <button data-dice="6">d6</button>
+        <button data-dice="8">d8</button>
+        <button data-dice="10">d10</button>
+        <button data-dice="12">d12</button>
+        <button data-dice="20">d20</button>
+        <button data-dice="100">d100</button>
+      </div>
+
+      <div class="custom-roll">
+        <h3>Формула броска</h3>
+
+        <div class="custom-roll-row">
+          <input id="customRollInput" type="text" placeholder="Например: 2d6+3">
+          <button id="customRollButton">Бросить</button>
+        </div>
+
+        <p id="customRollDetails" class="custom-roll-details">
+          Введи формулу вроде 1d20+5 или 3d8.
+        </p>
+      </div>
+    </section>
+
+    <section class="dice-panel">
+      <h2>История бросков</h2>
+      <ul class="dice-history" id="diceHistory">
+        <li>Пока бросков нет.</li>
+      </ul>
+    </section>
+
+  </main>
+
+</div>
+
+<script src="../script.js"></script>
+</body>
+</html>
