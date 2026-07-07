@@ -153,13 +153,20 @@ if (charactersCodex) {
       renderCharacter(selectedIndex);
     });
 }
-
 const journalContainer = document.querySelector("#journalContainer");
 
 if (journalContainer) {
-  fetch("../data/journal.json")
-    .then(response => response.json())
-    .then(entries => {
+  db.collection("journal")
+    .get()
+    .then(snapshot => {
+      const entries = [];
+
+      snapshot.forEach(doc => {
+        entries.push(doc.data());
+      });
+
+      entries.sort((a, b) => Number(a.id) - Number(b.id));
+
       journalContainer.innerHTML = entries.map(entry => `
         <article class="journal-entry">
           <button class="journal-header">
