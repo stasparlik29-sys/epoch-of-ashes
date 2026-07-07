@@ -12,6 +12,7 @@
     <a href="index.html">Главная</a>
     <a href="pages/quests.html">Квесты</a>
     <a href="pages/characters.html">Персонажи</a>
+    <a href="pages/journal.html">Журнал</a>
   </nav>
 
   <h1>Админ-панель</h1>
@@ -41,6 +42,27 @@
   <section class="quest-card">
     <h2>Существующие квесты</h2>
     <div id="questsAdminList"></div>
+  </section>
+
+
+  <section class="quest-card">
+    <h2 id="journalFormTitle">Новая запись журнала</h2>
+
+    <input id="journalId" placeholder="Номер сессии / ID">
+    <input id="journalDate" placeholder="Дата или пометка, например: Сессия 17">
+    <input id="journalTitle" placeholder="Название записи">
+    <textarea id="journalSummary" placeholder="Краткое описание"></textarea>
+    <textarea id="journalContent" placeholder="Полный текст. Каждый абзац с новой строки."></textarea>
+
+    <button id="saveJournalBtn" class="main-button">Сохранить запись</button>
+    <button id="clearJournalBtn" class="main-button" type="button">Очистить форму</button>
+
+    <p id="journalMessage"></p>
+  </section>
+
+  <section class="quest-card">
+    <h2>Существующие записи журнала</h2>
+    <div id="journalAdminList"></div>
   </section>
 
   <section class="quest-card">
@@ -102,6 +124,7 @@
 
 <script>
   let editingQuestId = null;
+  let editingJournalId = null;
   let editingCharacterId = null;
   let currentCharacterData = null;
 
@@ -117,6 +140,17 @@
   const questGiver = document.querySelector("#questGiver");
   const questReward = document.querySelector("#questReward");
   const questStatus = document.querySelector("#questStatus");
+
+  const journalFormTitle = document.querySelector("#journalFormTitle");
+  const journalId = document.querySelector("#journalId");
+  const journalDate = document.querySelector("#journalDate");
+  const journalTitle = document.querySelector("#journalTitle");
+  const journalSummary = document.querySelector("#journalSummary");
+  const journalContent = document.querySelector("#journalContent");
+  const saveJournalBtn = document.querySelector("#saveJournalBtn");
+  const clearJournalBtn = document.querySelector("#clearJournalBtn");
+  const journalMessage = document.querySelector("#journalMessage");
+  const journalAdminList = document.querySelector("#journalAdminList");
 
   const characterSelect = document.querySelector("#characterSelect");
   const characterName = document.querySelector("#characterName");
@@ -245,6 +279,106 @@
     clearForm();
     loadQuests();
   });
+
+
+
+  function clearJournalForm() {
+    editingJournalId = null;
+    journalFormTitle.textContent = "Новая запись журнала";
+    journalId.value = "";
+    journalDate.value = "";
+    journalTitle.value = "";
+    journalSummary.value = "";
+    journalContent.value = "";
+    journalMessage.textContent = "";
+  }
+
+  function normalizeJournalContent(text) {
+    return text
+      .split(/\n+/)
+      .map(paragraph => paragraph.trim())
+      .filter(Boolean);
+  }
+
+  function journalContentToText(content) {
+    if (Array.isArray(content)) return content.join("\n");
+    return content || "";
+  }
+
+  async function loadJournalEntries() {
+    const snapshot = await db.collection("journal").get();
+    const entries = [];
+
+    snapshot.forEach(doc => {
+      entries.push({ docId: doc.id, ...doc.data() });
+    });
+
+    entries.sort((a, b) => Number(a.id || 0) - Number(b.id || 0));
+
+    journalAdminList.innerHTML = entries.map(entry => `
+      <div class="quest-info" style="margin-bottom: 16px;">
+        <div><span>Сессия ${entry.id || "—"}</span><strong>${entry.title || "Без названия"}</strong></div>
+        <div><span>Дата</span><strong>${entry.date || "—"}</strong></div>
+        <div>
+          <button class="editJournalBtn" data-id="${entry.docId}">✏️ Редактировать</button>
+          <button class="deleteJournalBtn" data-id="${entry.docId}">🗑️ Удалить</button>
+        </div>
+      </div>
+    `).join("");
+
+    document.querySelectorAll(".editJournalBtn").forEach(button => {
+      button.addEventListener("click", async () => {
+        const docId = button.dataset.id;
+        const doc = await db.collection("journal").doc(docId).get();
+        const entry = doc.data();
+
+        editingJournalId = docId;
+        journalFormTitle.textContent = "Редактирование записи журнала";
+
+        journalId.value = entry.id || "";
+        journalDate.value = entry.date || "";
+        journalTitle.value = entry.title || "";
+        journalSummary.value = entry.summary || "";
+        journalContent.value = journalContentToText(entry.content);
+
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+    });
+
+    document.querySelectorAll(".deleteJournalBtn").forEach(button => {
+      button.addEventListener("click", async () => {
+        if (!confirm("Удалить эту запись журнала?")) return;
+
+        await db.collection("journal").doc(button.dataset.id).delete();
+
+        journalMessage.textContent = "Запись журнала удалена.";
+        clearJournalForm();
+        loadJournalEntries();
+      });
+    });
+  }
+
+  saveJournalBtn.addEventListener("click", async () => {
+    const entryId = journalId.value.trim() || Date.now();
+    const docId = editingJournalId || `journal-${entryId}`;
+
+    const entry = {
+      id: Number(entryId) || entryId,
+      date: journalDate.value.trim(),
+      title: journalTitle.value.trim(),
+      summary: journalSummary.value.trim(),
+      content: normalizeJournalContent(journalContent.value)
+    };
+
+    await db.collection("journal").doc(docId).set(entry);
+
+    journalMessage.textContent = editingJournalId ? "Запись журнала обновлена." : "Запись журнала создана.";
+    editingJournalId = docId;
+    await loadJournalEntries();
+  });
+
+  clearJournalBtn.addEventListener("click", clearJournalForm);
+
 
   clearFormBtn.addEventListener("click", clearForm);
 
@@ -399,6 +533,7 @@
   });
 
   loadQuests();
+  loadJournalEntries();
   loadCharacters();
 </script>
 
