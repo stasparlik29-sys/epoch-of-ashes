@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Импорт квестов</title>
+</head>
+<body style="background:#080705;color:#ead7aa;font-family:Georgia,serif;padding:40px;">
+  <h1>Импорт квестов в Firebase</h1>
+  <button id="importBtn" style="padding:14px 24px;font-size:18px;">Импортировать quests.json</button>
+  <pre id="log"></pre>
+
+  <script src="https://www.gstatic.com/firebasejs/12.15.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore-compat.js"></script>
+  <script src="firebase.js"></script>
+
+  <script>
+    const log = document.querySelector("#log");
+
+    document.querySelector("#importBtn").addEventListener("click", async () => {
+      log.textContent = "Загружаю quests.json...\n";
+
+      const response = await fetch("data/quests.json");
+      const quests = await response.json();
+
+      for (const quest of quests) {
+        const id = `quest-${quest.id}`;
+        await db.collection("quests").doc(id).set(quest);
+        log.textContent += `Добавлен квест: ${quest.title}\n`;
+      }
+
+      log.textContent += "\nГотово. Квесты перенесены в Firestore.";
+    });
+  </script>
+</body>
+</html>
