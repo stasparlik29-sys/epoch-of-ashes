@@ -13,19 +13,14 @@ const db = firebase.firestore();
 const charactersCodex = document.querySelector("#charactersCodex");
 
 if (charactersCodex) {
-  fetch("../data/characters.json")
-    .then(response => response.json())
-    .then(characters => {
-      let selectedIndex = 0;
+  db.collection("characters")
+    .get()
+    .then(snapshot => {
+      const characters = [];
 
-      function abilityBlock(label, ability) {
-        return `
-          <div>
-            <span>${label}</span>
-            <strong>${ability.value}</strong>
-            <em>${ability.mod}</em>
-          </div>
-        `;
+      snapshot.forEach(doc => {
+        characters.push(doc.data());
+      });
       }
 
       function companionBlock(companion) {
