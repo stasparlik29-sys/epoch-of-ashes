@@ -7,173 +7,259 @@
 </head>
 <body>
 
-  <main class="page-screen">
-    <nav class="top-nav">
-      <a href="index.html">Главная</a>
-      <a href="pages/quests.html">Квесты</a>
-    </nav>
+<main class="page-screen">
+  <nav class="top-nav">
+    <a href="index.html">Главная</a>
+    <a href="pages/quests.html">Квесты</a>
+    <a href="pages/characters.html">Персонажи</a>
+  </nav>
 
-    <h1>Админ-панель</h1>
-    <p>Управление квестами кампании.</p>
+  <h1>Админ-панель</h1>
+  <p>Управление кодексом кампании.</p>
 
-    <section class="quest-card">
-      <h2 id="formTitle">Новый квест</h2>
+  <section class="quest-card">
+    <h2 id="formTitle">Новый квест</h2>
 
-      <input id="questTitle" placeholder="Название квеста">
-      <textarea id="questDescription" placeholder="Описание квеста"></textarea>
-      <input id="questDifficulty" placeholder="Сложность">
-      <input id="questGiver" placeholder="Кто выдал">
-      <input id="questReward" placeholder="Награда">
+    <input id="questTitle" placeholder="Название квеста">
+    <textarea id="questDescription" placeholder="Описание квеста"></textarea>
+    <input id="questDifficulty" placeholder="Сложность">
+    <input id="questGiver" placeholder="Кто выдал">
+    <input id="questReward" placeholder="Награда">
 
-      <select id="questStatus">
-        <option value="active">Активный</option>
-        <option value="completed">Завершён</option>
-        <option value="failed">Провален</option>
-      </select>
+    <select id="questStatus">
+      <option value="active">Активный</option>
+      <option value="completed">Завершён</option>
+      <option value="failed">Провален</option>
+    </select>
 
-      <button id="saveQuestBtn" class="main-button">Сохранить квест</button>
-      <button id="clearFormBtn" class="main-button" type="button">Очистить форму</button>
+    <button id="saveQuestBtn" class="main-button">Сохранить квест</button>
+    <button id="clearFormBtn" class="main-button" type="button">Очистить форму</button>
 
-      <p id="adminMessage"></p>
-    </section>
+    <p id="adminMessage"></p>
+  </section>
 
-    <section class="quest-card">
-      <h2>Существующие квесты</h2>
-      <div id="questsAdminList"></div>
-    </section>
-  </main>
+  <section class="quest-card">
+    <h2>Существующие квесты</h2>
+    <div id="questsAdminList"></div>
+  </section>
 
-  <script src="https://www.gstatic.com/firebasejs/12.15.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore-compat.js"></script>
-  <script src="firebase.js"></script>
+  <section class="quest-card">
+    <h2 id="characterFormTitle">Редактирование персонажа</h2>
 
-  <script>
-    let editingQuestId = null;
+    <select id="characterSelect">
+      <option value="">Выбрать персонажа</option>
+    </select>
 
-    const formTitle = document.querySelector("#formTitle");
-    const saveQuestBtn = document.querySelector("#saveQuestBtn");
-    const clearFormBtn = document.querySelector("#clearFormBtn");
-    const adminMessage = document.querySelector("#adminMessage");
-    const questsAdminList = document.querySelector("#questsAdminList");
+    <input id="characterName" placeholder="Имя">
+    <input id="characterRace" placeholder="Раса">
+    <input id="characterClass" placeholder="Класс">
+    <input id="characterDomain" placeholder="Подкласс / домен / роль">
+    <input id="characterGod" placeholder="Покровитель">
+    <input id="characterStatus" placeholder="Статус">
+    <input id="characterRole" placeholder="Роль">
+    <input id="characterImage" placeholder="Путь к изображению">
 
-    const questTitle = document.querySelector("#questTitle");
-    const questDescription = document.querySelector("#questDescription");
-    const questDifficulty = document.querySelector("#questDifficulty");
-    const questGiver = document.querySelector("#questGiver");
-    const questReward = document.querySelector("#questReward");
-    const questStatus = document.querySelector("#questStatus");
+    <textarea id="characterDescription" placeholder="Краткое описание"></textarea>
+    <textarea id="characterBiography" placeholder="Полная биография"></textarea>
 
-    function clearForm() {
-      editingQuestId = null;
-      formTitle.textContent = "Новый квест";
+    <button id="saveCharacterBtn" class="main-button">Сохранить персонажа</button>
 
-      questTitle.value = "";
-      questDescription.value = "";
-      questDifficulty.value = "";
-      questGiver.value = "";
-      questReward.value = "";
-      questStatus.value = "active";
-    }
+    <p id="characterMessage"></p>
+  </section>
+</main>
 
-    async function loadQuests() {
-      const snapshot = await db.collection("quests").get();
-      const quests = [];
+<script src="https://www.gstatic.com/firebasejs/12.15.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore-compat.js"></script>
+<script src="firebase.js"></script>
 
-      snapshot.forEach(doc => {
-        quests.push({
-          docId: doc.id,
-          ...doc.data()
-        });
-      });
+<script>
+  let editingQuestId = null;
+  let editingCharacterId = null;
+  let currentCharacterData = null;
 
-      quests.sort((a, b) => Number(a.id) - Number(b.id));
+  const formTitle = document.querySelector("#formTitle");
+  const saveQuestBtn = document.querySelector("#saveQuestBtn");
+  const clearFormBtn = document.querySelector("#clearFormBtn");
+  const adminMessage = document.querySelector("#adminMessage");
+  const questsAdminList = document.querySelector("#questsAdminList");
 
-      questsAdminList.innerHTML = quests.map(quest => `
-        <div class="quest-info" style="margin-bottom: 16px;">
-          <div>
-            <span>${getStatusName(quest.status)}</span>
-            <strong>${quest.title}</strong>
-          </div>
+  const questTitle = document.querySelector("#questTitle");
+  const questDescription = document.querySelector("#questDescription");
+  const questDifficulty = document.querySelector("#questDifficulty");
+  const questGiver = document.querySelector("#questGiver");
+  const questReward = document.querySelector("#questReward");
+  const questStatus = document.querySelector("#questStatus");
 
-          <div>
-            <span>Выдал</span>
-            <strong>${quest.giver}</strong>
-          </div>
+  const characterSelect = document.querySelector("#characterSelect");
+  const characterName = document.querySelector("#characterName");
+  const characterRace = document.querySelector("#characterRace");
+  const characterClass = document.querySelector("#characterClass");
+  const characterDomain = document.querySelector("#characterDomain");
+  const characterGod = document.querySelector("#characterGod");
+  const characterStatus = document.querySelector("#characterStatus");
+  const characterRole = document.querySelector("#characterRole");
+  const characterImage = document.querySelector("#characterImage");
+  const characterDescription = document.querySelector("#characterDescription");
+  const characterBiography = document.querySelector("#characterBiography");
+  const characterMessage = document.querySelector("#characterMessage");
 
-          <div>
-            <button class="editQuestBtn" data-id="${quest.docId}">✏️ Редактировать</button>
-            <button class="deleteQuestBtn" data-id="${quest.docId}">🗑️ Удалить</button>
-          </div>
-        </div>
-      `).join("");
+  function clearForm() {
+    editingQuestId = null;
+    formTitle.textContent = "Новый квест";
+    questTitle.value = "";
+    questDescription.value = "";
+    questDifficulty.value = "";
+    questGiver.value = "";
+    questReward.value = "";
+    questStatus.value = "active";
+  }
 
-      document.querySelectorAll(".editQuestBtn").forEach(button => {
-        button.addEventListener("click", async () => {
-          const docId = button.dataset.id;
-          const doc = await db.collection("quests").doc(docId).get();
-          const quest = doc.data();
+  async function loadQuests() {
+    const snapshot = await db.collection("quests").get();
+    const quests = [];
 
-          editingQuestId = docId;
-          formTitle.textContent = "Редактирование квеста";
-
-          questTitle.value = quest.title || "";
-          questDescription.value = quest.description || "";
-          questDifficulty.value = quest.difficulty || "";
-          questGiver.value = quest.giver || "";
-          questReward.value = quest.reward || "";
-          questStatus.value = quest.status || "active";
-
-          window.scrollTo({ top: 0, behavior: "smooth" });
-        });
-      });
-
-      document.querySelectorAll(".deleteQuestBtn").forEach(button => {
-        button.addEventListener("click", async () => {
-          const docId = button.dataset.id;
-
-          if (!confirm("Удалить этот квест?")) return;
-
-          await db.collection("quests").doc(docId).delete();
-
-          adminMessage.textContent = "Квест удалён.";
-          clearForm();
-          loadQuests();
-        });
-      });
-    }
-
-    function getStatusName(status) {
-      if (status === "active") return "Активный";
-      if (status === "completed") return "Завершён";
-      if (status === "failed") return "Провален";
-      return "Неизвестно";
-    }
-
-    saveQuestBtn.addEventListener("click", async () => {
-      const quest = {
-        id: editingQuestId ? Number(editingQuestId.replace("quest-", "")) : Date.now(),
-        title: questTitle.value.trim(),
-        description: questDescription.value.trim(),
-        difficulty: questDifficulty.value.trim(),
-        giver: questGiver.value.trim(),
-        reward: questReward.value.trim(),
-        status: questStatus.value
-      };
-
-      const docId = editingQuestId || `quest-${quest.id}`;
-
-      await db.collection("quests").doc(docId).set(quest);
-
-      adminMessage.textContent = editingQuestId ? "Квест обновлён." : "Квест создан.";
-
-      clearForm();
-      loadQuests();
+    snapshot.forEach(doc => {
+      quests.push({ docId: doc.id, ...doc.data() });
     });
 
-    clearFormBtn.addEventListener("click", clearForm);
+    quests.sort((a, b) => Number(a.id) - Number(b.id));
 
+    questsAdminList.innerHTML = quests.map(quest => `
+      <div class="quest-info" style="margin-bottom: 16px;">
+        <div><span>${getStatusName(quest.status)}</span><strong>${quest.title}</strong></div>
+        <div><span>Выдал</span><strong>${quest.giver}</strong></div>
+        <div>
+          <button class="editQuestBtn" data-id="${quest.docId}">✏️ Редактировать</button>
+          <button class="deleteQuestBtn" data-id="${quest.docId}">🗑️ Удалить</button>
+        </div>
+      </div>
+    `).join("");
+
+    document.querySelectorAll(".editQuestBtn").forEach(button => {
+      button.addEventListener("click", async () => {
+        const docId = button.dataset.id;
+        const doc = await db.collection("quests").doc(docId).get();
+        const quest = doc.data();
+
+        editingQuestId = docId;
+        formTitle.textContent = "Редактирование квеста";
+
+        questTitle.value = quest.title || "";
+        questDescription.value = quest.description || "";
+        questDifficulty.value = quest.difficulty || "";
+        questGiver.value = quest.giver || "";
+        questReward.value = quest.reward || "";
+        questStatus.value = quest.status || "active";
+
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+    });
+
+    document.querySelectorAll(".deleteQuestBtn").forEach(button => {
+      button.addEventListener("click", async () => {
+        if (!confirm("Удалить этот квест?")) return;
+
+        await db.collection("quests").doc(button.dataset.id).delete();
+        adminMessage.textContent = "Квест удалён.";
+        clearForm();
+        loadQuests();
+      });
+    });
+  }
+
+  function getStatusName(status) {
+    if (status === "active") return "Активный";
+    if (status === "completed") return "Завершён";
+    if (status === "failed") return "Провален";
+    return "Неизвестно";
+  }
+
+  saveQuestBtn.addEventListener("click", async () => {
+    const quest = {
+      id: editingQuestId ? Number(editingQuestId.replace("quest-", "")) : Date.now(),
+      title: questTitle.value.trim(),
+      description: questDescription.value.trim(),
+      difficulty: questDifficulty.value.trim(),
+      giver: questGiver.value.trim(),
+      reward: questReward.value.trim(),
+      status: questStatus.value
+    };
+
+    const docId = editingQuestId || `quest-${quest.id}`;
+
+    await db.collection("quests").doc(docId).set(quest);
+
+    adminMessage.textContent = editingQuestId ? "Квест обновлён." : "Квест создан.";
+    clearForm();
     loadQuests();
-  </script>
+  });
+
+  clearFormBtn.addEventListener("click", clearForm);
+
+  async function loadCharacters() {
+    const snapshot = await db.collection("characters").get();
+
+    characterSelect.innerHTML = `<option value="">Выбрать персонажа</option>`;
+
+    snapshot.forEach(doc => {
+      const character = doc.data();
+      characterSelect.innerHTML += `
+        <option value="${doc.id}">${character.name}</option>
+      `;
+    });
+  }
+
+  characterSelect.addEventListener("change", async () => {
+    const docId = characterSelect.value;
+    if (!docId) return;
+
+    const doc = await db.collection("characters").doc(docId).get();
+    const character = doc.data();
+
+    editingCharacterId = docId;
+    currentCharacterData = character;
+
+    characterName.value = character.name || "";
+    characterRace.value = character.race || "";
+    characterClass.value = character.class || "";
+    characterDomain.value = character.domain || "";
+    characterGod.value = character.god || "";
+    characterStatus.value = character.status || "";
+    characterRole.value = character.role || "";
+    characterImage.value = character.image || "";
+    characterDescription.value = character.description || "";
+    characterBiography.value = character.biography || "";
+  });
+
+  saveCharacterBtn.addEventListener("click", async () => {
+    if (!editingCharacterId || !currentCharacterData) {
+      characterMessage.textContent = "Сначала выбери персонажа.";
+      return;
+    }
+
+    const updatedCharacter = {
+      ...currentCharacterData,
+      name: characterName.value.trim(),
+      race: characterRace.value.trim(),
+      class: characterClass.value.trim(),
+      domain: characterDomain.value.trim(),
+      god: characterGod.value.trim(),
+      status: characterStatus.value.trim(),
+      role: characterRole.value.trim(),
+      image: characterImage.value.trim(),
+      description: characterDescription.value.trim(),
+      biography: characterBiography.value.trim()
+    };
+
+    await db.collection("characters").doc(editingCharacterId).set(updatedCharacter);
+
+    characterMessage.textContent = "Персонаж обновлён.";
+    loadCharacters();
+  });
+
+  loadQuests();
+  loadCharacters();
+</script>
 
 </body>
 </html>
