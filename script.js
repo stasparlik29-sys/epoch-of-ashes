@@ -1,15 +1,3 @@
-const firebaseConfig = {
-  apiKey: "AIzaSyADJg1m2L5AgemtSNr1u3ZHbsPQ6SLMvbI",
-  authDomain: "epoch-of-ashes.firebaseapp.com",
-  projectId: "epoch-of-ashes",
-  storageBucket: "epoch-of-ashes.firebasestorage.app",
-  messagingSenderId: "643542990904",
-  appId: "1:643542990904:web:1f2790f4dc58f4772c3467",
-  measurementId: "G-7LJVQXRZ44"
-};
-
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
 const charactersCodex = document.querySelector("#charactersCodex");
 
 if (charactersCodex) {
@@ -21,6 +9,17 @@ if (charactersCodex) {
       snapshot.forEach(doc => {
         characters.push(doc.data());
       });
+
+      let selectedIndex = 0;
+
+      function abilityBlock(label, ability) {
+        return `
+          <div>
+            <span>${label}</span>
+            <strong>${ability.value}</strong>
+            <em>${ability.mod}</em>
+          </div>
+        `;
       }
 
       function companionBlock(companion) {
@@ -29,22 +28,18 @@ if (charactersCodex) {
         return `
           <section class="wide-section companion-section">
             <h4>Спутник</h4>
-
             <div class="companion-header">
               <div>
                 <h5>${companion.name}</h5>
                 <p>${companion.type} · ${companion.status}</p>
               </div>
             </div>
-
             <p>${companion.description}</p>
-
             <div class="hero-stats companion-stats">
               <span>КД <strong>${companion.combat.ac}</strong></span>
               <span>Хиты <strong>${companion.combat.hp}</strong></span>
               <span>Скорость <strong>${companion.combat.speed}</strong></span>
             </div>
-
             <div class="ability-grid">
               ${abilityBlock("Сила", companion.abilities.str)}
               ${abilityBlock("Ловкость", companion.abilities.dex)}
@@ -62,10 +57,8 @@ if (charactersCodex) {
 
         charactersCodex.innerHTML = `
           <section class="codex-layout">
-
             <aside class="codex-list">
               <h2>Список</h2>
-
               ${characters.map((item, itemIndex) => `
                 <button class="codex-list-item ${itemIndex === index ? "active" : ""}" data-index="${itemIndex}">
                   <strong>${item.name}</strong>
@@ -75,23 +68,19 @@ if (charactersCodex) {
             </aside>
 
             <article class="codex-profile">
-
               <div class="codex-portrait">
                 <img src="${character.image}" alt="${character.name}">
               </div>
 
               <div class="codex-info">
                 <p class="codex-label">Досье персонажа</p>
-
                 <h2>${character.name}</h2>
 
                 <p class="role">
                   ${character.race} · ${character.class} · ${character.domain} · ${character.god}
                 </p>
 
-                <p class="character-description">
-                  ${character.description}
-                </p>
+                <p class="character-description">${character.description}</p>
 
                 <div class="info-grid">
                   <div><span>Раса</span><strong>${character.race}</strong></div>
@@ -106,10 +95,8 @@ if (charactersCodex) {
                   <h3>Досье героя</h3>
 
                   <div class="hero-sections">
-
                     <section>
                       <h4>Характеристики</h4>
-
                       <div class="ability-grid">
                         ${abilityBlock("Сила", character.abilities.str)}
                         ${abilityBlock("Ловкость", character.abilities.dex)}
@@ -122,7 +109,6 @@ if (charactersCodex) {
 
                     <section>
                       <h4>Боевые данные</h4>
-
                       <div class="hero-stats">
                         <span>Уровень <strong>${character.combat.level}</strong></span>
                         <span>КД <strong>${character.combat.ac}</strong></span>
@@ -149,13 +135,10 @@ if (charactersCodex) {
                       <h4>Полная биография</h4>
                       <p>${character.biography}</p>
                     </section>
-
                   </div>
                 </div>
               </div>
-
             </article>
-
           </section>
         `;
 
@@ -170,7 +153,9 @@ if (charactersCodex) {
       renderCharacter(selectedIndex);
     });
 }
+
 const journalContainer = document.querySelector("#journalContainer");
+
 if (journalContainer) {
   fetch("../data/journal.json")
     .then(response => response.json())
