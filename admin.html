@@ -1,273 +1,207 @@
 <!DOCTYPE html>
+
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <title>Админ-панель — Эпоха Пепла</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="utf-8"/>
+<title>Админ-панель — Эпоха Пепла</title>
+<link href="style.css" rel="stylesheet"/>
 </head>
 <body class="admin-page">
-
 <main class="page-screen">
-  <nav class="top-nav">
-    <a href="index.html">Главная</a>
-    <a href="pages/world.html">Мир</a>
-    <a href="pages/cities.html">Города</a>
-    <a href="pages/locations.html">Локации</a>
-    <a href="pages/maps.html">Карты</a>
-    <a href="pages/bestiary.html">Бестиарий</a>
-    <a href="pages/quests.html">Квесты</a>
-    <a href="pages/characters.html">Персонажи</a>
-    <a href="pages/journal.html">Журнал</a>
-  </nav>
-
-  <h1>Админ-панель</h1>
-  <p>Управление кодексом кампании.</p>
-
-  <section class="quest-card admin-home-card">
-    <h2>Главная страница</h2>
-    <p class="admin-section-note">Эти поля меняют главный экран сайта без правки кода.</p>
-
-    <h3>Главный баннер</h3>
-    <textarea id="homeHeroTitle" placeholder="Главный заголовок"></textarea>
-    <textarea id="homeHeroSubtitle" placeholder="Подзаголовок"></textarea>
-    <input id="homeButtonText" placeholder="Текст кнопки">
-    <input id="homeButtonLink" placeholder="Ссылка кнопки, например pages/journal.html">
-
-    <h3>Последняя сессия</h3>
-    <textarea id="homeSessionBullets" placeholder="Каждый пункт с новой строки"></textarea>
-
-    <h3>Карточка персонажа на главной</h3>
-    <input id="homeFeaturedName" placeholder="Имя персонажа">
-    <textarea id="homeFeaturedSubtitle" placeholder="Краткое описание персонажа"></textarea>
-    <input id="homeFeaturedImage" placeholder="Путь к изображению, например assets/Characters/bjorn.jpg">
-
-    <button id="saveHomeBtn" class="main-button">Сохранить главную</button>
-    <button id="resetHomeBtn" class="main-button" type="button">Вернуть текущие тексты</button>
-
-    <p id="homeMessage"></p>
-  </section>
-
-  <section class="quest-card admin-world-card">
-    <h2 id="worldFormTitle">Новая глава мира</h2>
-    <p class="admin-section-note">Раздел для истории мира, пантеона, эпох, империй и важных событий.</p>
-
-    <input id="worldOrder" placeholder="Порядок отображения, например 1">
-    <input id="worldTitle" placeholder="Название главы">
-    <input id="worldSubtitle" placeholder="Подзаголовок / краткая пометка">
-    <textarea id="worldContent" placeholder="Полный текст главы. Каждый абзац с новой строки."></textarea>
-
-    <button id="saveWorldBtn" class="main-button">Сохранить главу мира</button>
-    <button id="clearWorldBtn" class="main-button" type="button">Очистить форму</button>
-
-    <p id="worldMessage"></p>
-  </section>
-
-  <section class="quest-card">
-    <h2>Главы мира</h2>
-    <div id="worldAdminList"></div>
-  </section>
-
-
-  <section class="quest-card admin-city-card">
-    <h2 id="cityFormTitle">Новый город</h2>
-    <p class="admin-section-note">Города, столицы, крепости, порты и важные поселения кампании.</p>
-
-    <input id="cityOrder" placeholder="Порядок отображения, например 1">
-    <input id="cityName" placeholder="Название города">
-    <input id="cityRegion" placeholder="Регион / государство">
-    <input id="cityStatus" placeholder="Статус, например: столица, порт, руины">
-    <input id="cityPopulation" placeholder="Население">
-    <input id="cityRuler" placeholder="Правитель / власть">
-    <input id="cityImage" placeholder="Путь к изображению, например ../assets/Locations/city.jpg">
-    <textarea id="citySummary" placeholder="Краткое описание города"></textarea>
-    <textarea id="cityDescription" placeholder="Полное описание. Каждый абзац с новой строки."></textarea>
-
-    <button id="saveCityBtn" class="main-button">Сохранить город</button>
-    <button id="clearCityBtn" class="main-button" type="button">Очистить форму</button>
-
-    <p id="cityMessage"></p>
-  </section>
-
-  <section class="quest-card">
-    <h2>Города</h2>
-    <div id="citiesAdminList"></div>
-  </section>
-
-  <section class="quest-card admin-location-card">
-    <h2 id="locationFormTitle">Новая локация</h2>
-    <p class="admin-section-note">Храмы, таверны, подземелья, башни, лагеря и важные места.</p>
-
-    <input id="locationOrder" placeholder="Порядок отображения, например 1">
-    <input id="locationName" placeholder="Название локации">
-    <input id="locationType" placeholder="Тип, например: храм, таверна, подземелье">
-    <input id="locationRegion" placeholder="Город / регион">
-    <input id="locationStatus" placeholder="Статус">
-    <input id="locationImage" placeholder="Путь к изображению, например ../assets/Locations/temple.jpg">
-    <textarea id="locationSummary" placeholder="Краткое описание локации"></textarea>
-    <textarea id="locationDescription" placeholder="Полное описание. Каждый абзац с новой строки."></textarea>
-
-    <button id="saveLocationBtn" class="main-button">Сохранить локацию</button>
-    <button id="clearLocationBtn" class="main-button" type="button">Очистить форму</button>
-
-    <p id="locationMessage"></p>
-  </section>
-
-  <section class="quest-card">
-    <h2>Локации</h2>
-    <div id="locationsAdminList"></div>
-  </section>
-
-  <section class="quest-card admin-map-card">
-    <h2 id="mapFormTitle">Новая карта</h2>
-    <p class="admin-section-note">Карты городов, подземелий, храмов, таверн и боевых сцен.</p>
-
-    <input id="mapOrder" placeholder="Порядок отображения, например 1">
-    <input id="mapTitle" placeholder="Название карты">
-    <input id="mapCategory" placeholder="Категория, например: город, храм, таверна">
-    <input id="mapImage" placeholder="Путь к изображению, например ../assets/Maps/map.jpg">
-    <textarea id="mapDescription" placeholder="Описание карты"></textarea>
-
-    <button id="saveMapBtn" class="main-button">Сохранить карту</button>
-    <button id="clearMapBtn" class="main-button" type="button">Очистить форму</button>
-
-    <p id="mapMessage"></p>
-  </section>
-
-  <section class="quest-card">
-    <h2>Карты</h2>
-    <div id="mapsAdminList"></div>
-  </section>
-
-  <section class="quest-card admin-bestiary-card">
-    <h2 id="beastFormTitle">Новое существо</h2>
-    <p class="admin-section-note">Монстры, демоны, звери, боссы и необычные существа кампании.</p>
-
-    <input id="beastOrder" placeholder="Порядок отображения, например 1">
-    <input id="beastName" placeholder="Название существа">
-    <input id="beastType" placeholder="Тип, например: демон, нежить, зверь">
-    <input id="beastDanger" placeholder="Опасность / CR">
-    <input id="beastAc" placeholder="КД">
-    <input id="beastHp" placeholder="Хиты">
-    <input id="beastImage" placeholder="Путь к изображению, например ../assets/Characters/monster.jpg">
-    <textarea id="beastSummary" placeholder="Краткое описание"></textarea>
-    <textarea id="beastAbilities" placeholder="Способности. Каждая с новой строки."></textarea>
-    <textarea id="beastLore" placeholder="История / легенда. Каждый абзац с новой строки."></textarea>
-
-    <button id="saveBeastBtn" class="main-button">Сохранить существо</button>
-    <button id="clearBeastBtn" class="main-button" type="button">Очистить форму</button>
-
-    <p id="beastMessage"></p>
-  </section>
-
-  <section class="quest-card">
-    <h2>Бестиарий</h2>
-    <div id="bestiaryAdminList"></div>
-  </section>
-
-  <section class="quest-card">
-    <h2 id="formTitle">Новый квест</h2>
-
-    <input id="questTitle" placeholder="Название квеста">
-    <textarea id="questDescription" placeholder="Описание квеста"></textarea>
-    <input id="questDifficulty" placeholder="Сложность">
-    <input id="questGiver" placeholder="Кто выдал">
-    <input id="questReward" placeholder="Награда">
-
-    <select id="questStatus">
-      <option value="active">Активный</option>
-      <option value="completed">Завершён</option>
-      <option value="failed">Провален</option>
-    </select>
-
-    <button id="saveQuestBtn" class="main-button">Сохранить квест</button>
-    <button id="clearFormBtn" class="main-button" type="button">Очистить форму</button>
-
-    <p id="adminMessage"></p>
-  </section>
-
-  <section class="quest-card">
-    <h2>Существующие квесты</h2>
-    <div id="questsAdminList"></div>
-  </section>
-
-
-  <section class="quest-card">
-    <h2 id="journalFormTitle">Новая запись журнала</h2>
-
-    <input id="journalId" placeholder="Номер сессии / ID">
-    <input id="journalDate" placeholder="Дата или пометка, например: Сессия 17">
-    <input id="journalTitle" placeholder="Название записи">
-    <textarea id="journalSummary" placeholder="Краткое описание"></textarea>
-    <textarea id="journalContent" placeholder="Полный текст. Каждый абзац с новой строки."></textarea>
-
-    <button id="saveJournalBtn" class="main-button">Сохранить запись</button>
-    <button id="clearJournalBtn" class="main-button" type="button">Очистить форму</button>
-
-    <p id="journalMessage"></p>
-  </section>
-
-  <section class="quest-card">
-    <h2>Существующие записи журнала</h2>
-    <div id="journalAdminList"></div>
-  </section>
-
-  <section class="quest-card">
-    <h2 id="characterFormTitle">Персонажи</h2>
-
-    <select id="characterSelect">
-      <option value="">Выбрать персонажа</option>
-    </select>
-
-    <h3>Основная информация</h3>
-    <input id="characterName" placeholder="Имя">
-    <input id="characterRace" placeholder="Раса">
-    <input id="characterClass" placeholder="Класс">
-    <input id="characterDomain" placeholder="Подкласс / домен / роль">
-    <input id="characterDomainLabel" placeholder="Название поля подкласса, например: Домен">
-    <input id="characterGod" placeholder="Покровитель">
-    <input id="characterStatus" placeholder="Статус">
-    <input id="characterRole" placeholder="Роль">
-    <input id="characterImage" placeholder="Путь к изображению">
-
-    <textarea id="characterDescription" placeholder="Краткое описание"></textarea>
-    <textarea id="characterBiography" placeholder="Полная биография"></textarea>
-
-    <h3>Характеристики</h3>
-    <div class="info-grid">
-      <div><span>Сила</span><input id="strValue" placeholder="10"><input id="strMod" placeholder="+0"></div>
-      <div><span>Ловкость</span><input id="dexValue" placeholder="10"><input id="dexMod" placeholder="+0"></div>
-      <div><span>Телосложение</span><input id="conValue" placeholder="10"><input id="conMod" placeholder="+0"></div>
-      <div><span>Интеллект</span><input id="intValue" placeholder="10"><input id="intMod" placeholder="+0"></div>
-      <div><span>Мудрость</span><input id="wisValue" placeholder="10"><input id="wisMod" placeholder="+0"></div>
-      <div><span>Харизма</span><input id="chaValue" placeholder="10"><input id="chaMod" placeholder="+0"></div>
-    </div>
-
-    <h3>Боевые данные</h3>
-    <div class="info-grid">
-      <div><span>Уровень</span><input id="combatLevel" placeholder="1"></div>
-      <div><span>КД</span><input id="combatAc" placeholder="10"></div>
-      <div><span>Хиты</span><input id="combatHp" placeholder="10"></div>
-      <div><span>Скорость</span><input id="combatSpeed" placeholder="30 фт."></div>
-      <div><span>Владение</span><input id="combatProficiency" placeholder="+2"></div>
-      <div><span>Инициатива</span><input id="combatInitiative" placeholder="+0"></div>
-    </div>
-
-    <h3>Личность</h3>
-    <textarea id="characterPersonality" placeholder="Черты характера"></textarea>
-    <textarea id="characterIdeals" placeholder="Идеалы"></textarea>
-
-    <button id="newCharacterBtn" class="main-button" type="button">Новый персонаж</button>
-    <button id="saveCharacterBtn" class="main-button">Сохранить персонажа</button>
-    <button id="deleteCharacterBtn" class="main-button" type="button">Удалить персонажа</button>
-
-    <p id="characterMessage"></p>
-  </section>
+<nav class="top-nav"><button class="admin-tab-button active" data-admin-tab="home" type="button">Главная</button><button class="admin-tab-button" data-admin-tab="world" type="button">Мир</button><button class="admin-tab-button" data-admin-tab="cities" type="button">Города</button><button class="admin-tab-button" data-admin-tab="locations" type="button">Локации</button><button class="admin-tab-button" data-admin-tab="maps" type="button">Карты</button><button class="admin-tab-button" data-admin-tab="bestiary" type="button">Бестиарий</button><button class="admin-tab-button" data-admin-tab="quests" type="button">Квесты</button><button class="admin-tab-button" data-admin-tab="characters" type="button">Персонажи</button><button class="admin-tab-button" data-admin-tab="journal" type="button">Журнал</button><a class="admin-site-link" href="index.html">Открыть сайт</a></nav>
+<h1>Админ-панель</h1>
+<p>Управление кодексом кампании.</p>
+<section class="quest-card admin-home-card admin-section" data-admin-section="home">
+<h2>Главная страница</h2>
+<p class="admin-section-note">Эти поля меняют главный экран сайта без правки кода.</p>
+<h3>Главный баннер</h3>
+<textarea id="homeHeroTitle" placeholder="Главный заголовок"></textarea>
+<textarea id="homeHeroSubtitle" placeholder="Подзаголовок"></textarea>
+<input id="homeButtonText" placeholder="Текст кнопки"/>
+<input id="homeButtonLink" placeholder="Ссылка кнопки, например pages/journal.html"/>
+<h3>Последняя сессия</h3>
+<textarea id="homeSessionBullets" placeholder="Каждый пункт с новой строки"></textarea>
+<h3>Карточка персонажа на главной</h3>
+<input id="homeFeaturedName" placeholder="Имя персонажа"/>
+<textarea id="homeFeaturedSubtitle" placeholder="Краткое описание персонажа"></textarea>
+<input id="homeFeaturedImage" placeholder="Путь к изображению, например assets/Characters/bjorn.jpg"/>
+<button class="main-button" id="saveHomeBtn">Сохранить главную</button>
+<button class="main-button" id="resetHomeBtn" type="button">Вернуть текущие тексты</button>
+<p id="homeMessage"></p>
+</section>
+<section class="quest-card admin-world-card admin-section is-hidden" data-admin-section="world">
+<h2 id="worldFormTitle">Новая глава мира</h2>
+<p class="admin-section-note">Раздел для истории мира, пантеона, эпох, империй и важных событий.</p>
+<input id="worldOrder" placeholder="Порядок отображения, например 1"/>
+<input id="worldTitle" placeholder="Название главы"/>
+<input id="worldSubtitle" placeholder="Подзаголовок / краткая пометка"/>
+<textarea id="worldContent" placeholder="Полный текст главы. Каждый абзац с новой строки."></textarea>
+<button class="main-button" id="saveWorldBtn">Сохранить главу мира</button>
+<button class="main-button" id="clearWorldBtn" type="button">Очистить форму</button>
+<p id="worldMessage"></p>
+</section>
+<section class="quest-card admin-section is-hidden" data-admin-section="world">
+<h2>Главы мира</h2>
+<div id="worldAdminList"></div>
+</section>
+<section class="quest-card admin-city-card admin-section is-hidden" data-admin-section="cities">
+<h2 id="cityFormTitle">Новый город</h2>
+<p class="admin-section-note">Города, столицы, крепости, порты и важные поселения кампании.</p>
+<input id="cityOrder" placeholder="Порядок отображения, например 1"/>
+<input id="cityName" placeholder="Название города"/>
+<input id="cityRegion" placeholder="Регион / государство"/>
+<input id="cityStatus" placeholder="Статус, например: столица, порт, руины"/>
+<input id="cityPopulation" placeholder="Население"/>
+<input id="cityRuler" placeholder="Правитель / власть"/>
+<input id="cityImage" placeholder="Путь к изображению, например ../assets/Locations/city.jpg"/>
+<textarea id="citySummary" placeholder="Краткое описание города"></textarea>
+<textarea id="cityDescription" placeholder="Полное описание. Каждый абзац с новой строки."></textarea>
+<button class="main-button" id="saveCityBtn">Сохранить город</button>
+<button class="main-button" id="clearCityBtn" type="button">Очистить форму</button>
+<p id="cityMessage"></p>
+</section>
+<section class="quest-card admin-section is-hidden" data-admin-section="cities">
+<h2>Города</h2>
+<div id="citiesAdminList"></div>
+</section>
+<section class="quest-card admin-location-card admin-section is-hidden" data-admin-section="locations">
+<h2 id="locationFormTitle">Новая локация</h2>
+<p class="admin-section-note">Храмы, таверны, подземелья, башни, лагеря и важные места.</p>
+<input id="locationOrder" placeholder="Порядок отображения, например 1"/>
+<input id="locationName" placeholder="Название локации"/>
+<input id="locationType" placeholder="Тип, например: храм, таверна, подземелье"/>
+<input id="locationRegion" placeholder="Город / регион"/>
+<input id="locationStatus" placeholder="Статус"/>
+<input id="locationImage" placeholder="Путь к изображению, например ../assets/Locations/temple.jpg"/>
+<textarea id="locationSummary" placeholder="Краткое описание локации"></textarea>
+<textarea id="locationDescription" placeholder="Полное описание. Каждый абзац с новой строки."></textarea>
+<button class="main-button" id="saveLocationBtn">Сохранить локацию</button>
+<button class="main-button" id="clearLocationBtn" type="button">Очистить форму</button>
+<p id="locationMessage"></p>
+</section>
+<section class="quest-card admin-section is-hidden" data-admin-section="locations">
+<h2>Локации</h2>
+<div id="locationsAdminList"></div>
+</section>
+<section class="quest-card admin-map-card admin-section is-hidden" data-admin-section="maps">
+<h2 id="mapFormTitle">Новая карта</h2>
+<p class="admin-section-note">Карты городов, подземелий, храмов, таверн и боевых сцен.</p>
+<input id="mapOrder" placeholder="Порядок отображения, например 1"/>
+<input id="mapTitle" placeholder="Название карты"/>
+<input id="mapCategory" placeholder="Категория, например: город, храм, таверна"/>
+<input id="mapImage" placeholder="Путь к изображению, например ../assets/Maps/map.jpg"/>
+<textarea id="mapDescription" placeholder="Описание карты"></textarea>
+<button class="main-button" id="saveMapBtn">Сохранить карту</button>
+<button class="main-button" id="clearMapBtn" type="button">Очистить форму</button><button class="main-button" id="importDefaultMapsBtn" type="button">Импортировать старые карты</button>
+<p id="mapMessage"></p>
+</section>
+<section class="quest-card admin-section is-hidden" data-admin-section="maps">
+<h2>Карты</h2>
+<div id="mapsAdminList"></div>
+</section>
+<section class="quest-card admin-bestiary-card admin-section is-hidden" data-admin-section="bestiary">
+<h2 id="beastFormTitle">Новое существо</h2>
+<p class="admin-section-note">Монстры, демоны, звери, боссы и необычные существа кампании.</p>
+<input id="beastOrder" placeholder="Порядок отображения, например 1"/>
+<input id="beastName" placeholder="Название существа"/>
+<input id="beastType" placeholder="Тип, например: демон, нежить, зверь"/>
+<input id="beastDanger" placeholder="Опасность / CR"/>
+<input id="beastAc" placeholder="КД"/>
+<input id="beastHp" placeholder="Хиты"/>
+<input id="beastImage" placeholder="Путь к изображению, например ../assets/Characters/monster.jpg"/>
+<textarea id="beastSummary" placeholder="Краткое описание"></textarea>
+<textarea id="beastAbilities" placeholder="Способности. Каждая с новой строки."></textarea>
+<textarea id="beastLore" placeholder="История / легенда. Каждый абзац с новой строки."></textarea>
+<button class="main-button" id="saveBeastBtn">Сохранить существо</button>
+<button class="main-button" id="clearBeastBtn" type="button">Очистить форму</button>
+<p id="beastMessage"></p>
+</section>
+<section class="quest-card admin-section is-hidden" data-admin-section="bestiary">
+<h2>Бестиарий</h2>
+<div id="bestiaryAdminList"></div>
+</section>
+<section class="quest-card admin-section is-hidden" data-admin-section="quests">
+<h2 id="formTitle">Новый квест</h2>
+<input id="questTitle" placeholder="Название квеста"/>
+<textarea id="questDescription" placeholder="Описание квеста"></textarea>
+<input id="questDifficulty" placeholder="Сложность"/>
+<input id="questGiver" placeholder="Кто выдал"/>
+<input id="questReward" placeholder="Награда"/>
+<select id="questStatus">
+<option value="active">Активный</option>
+<option value="completed">Завершён</option>
+<option value="failed">Провален</option>
+</select>
+<button class="main-button" id="saveQuestBtn">Сохранить квест</button>
+<button class="main-button" id="clearFormBtn" type="button">Очистить форму</button>
+<p id="adminMessage"></p>
+</section>
+<section class="quest-card admin-section is-hidden" data-admin-section="quests">
+<h2>Существующие квесты</h2>
+<div id="questsAdminList"></div>
+</section>
+<section class="quest-card admin-section is-hidden" data-admin-section="journal">
+<h2 id="journalFormTitle">Новая запись журнала</h2>
+<input id="journalId" placeholder="Номер сессии / ID"/>
+<input id="journalDate" placeholder="Дата или пометка, например: Сессия 17"/>
+<input id="journalTitle" placeholder="Название записи"/>
+<textarea id="journalSummary" placeholder="Краткое описание"></textarea>
+<textarea id="journalContent" placeholder="Полный текст. Каждый абзац с новой строки."></textarea>
+<button class="main-button" id="saveJournalBtn">Сохранить запись</button>
+<button class="main-button" id="clearJournalBtn" type="button">Очистить форму</button>
+<p id="journalMessage"></p>
+</section>
+<section class="quest-card admin-section is-hidden" data-admin-section="journal">
+<h2>Существующие записи журнала</h2>
+<div id="journalAdminList"></div>
+</section>
+<section class="quest-card admin-section is-hidden" data-admin-section="characters">
+<h2 id="characterFormTitle">Персонажи</h2>
+<select id="characterSelect">
+<option value="">Выбрать персонажа</option>
+</select>
+<h3>Основная информация</h3>
+<input id="characterName" placeholder="Имя"/>
+<input id="characterRace" placeholder="Раса"/>
+<input id="characterClass" placeholder="Класс"/>
+<input id="characterDomain" placeholder="Подкласс / домен / роль"/>
+<input id="characterDomainLabel" placeholder="Название поля подкласса, например: Домен"/>
+<input id="characterGod" placeholder="Покровитель"/>
+<input id="characterStatus" placeholder="Статус"/>
+<input id="characterRole" placeholder="Роль"/>
+<input id="characterImage" placeholder="Путь к изображению"/>
+<textarea id="characterDescription" placeholder="Краткое описание"></textarea>
+<textarea id="characterBiography" placeholder="Полная биография"></textarea>
+<h3>Характеристики</h3>
+<div class="info-grid">
+<div><span>Сила</span><input id="strValue" placeholder="10"/><input id="strMod" placeholder="+0"/></div>
+<div><span>Ловкость</span><input id="dexValue" placeholder="10"/><input id="dexMod" placeholder="+0"/></div>
+<div><span>Телосложение</span><input id="conValue" placeholder="10"/><input id="conMod" placeholder="+0"/></div>
+<div><span>Интеллект</span><input id="intValue" placeholder="10"/><input id="intMod" placeholder="+0"/></div>
+<div><span>Мудрость</span><input id="wisValue" placeholder="10"/><input id="wisMod" placeholder="+0"/></div>
+<div><span>Харизма</span><input id="chaValue" placeholder="10"/><input id="chaMod" placeholder="+0"/></div>
+</div>
+<h3>Боевые данные</h3>
+<div class="info-grid">
+<div><span>Уровень</span><input id="combatLevel" placeholder="1"/></div>
+<div><span>КД</span><input id="combatAc" placeholder="10"/></div>
+<div><span>Хиты</span><input id="combatHp" placeholder="10"/></div>
+<div><span>Скорость</span><input id="combatSpeed" placeholder="30 фт."/></div>
+<div><span>Владение</span><input id="combatProficiency" placeholder="+2"/></div>
+<div><span>Инициатива</span><input id="combatInitiative" placeholder="+0"/></div>
+</div>
+<h3>Личность</h3>
+<textarea id="characterPersonality" placeholder="Черты характера"></textarea>
+<textarea id="characterIdeals" placeholder="Идеалы"></textarea>
+<button class="main-button" id="newCharacterBtn" type="button">Новый персонаж</button>
+<button class="main-button" id="saveCharacterBtn">Сохранить персонажа</button>
+<button class="main-button" id="deleteCharacterBtn" type="button">Удалить персонажа</button>
+<p id="characterMessage"></p>
+</section>
 </main>
-
 <script src="https://www.gstatic.com/firebasejs/12.15.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore-compat.js"></script>
 <script src="firebase.js"></script>
-
 <script>
   let editingQuestId = null;
   let editingWorldId = null;
@@ -339,6 +273,7 @@
   const mapDescription = document.querySelector("#mapDescription");
   const saveMapBtn = document.querySelector("#saveMapBtn");
   const clearMapBtn = document.querySelector("#clearMapBtn");
+  const importDefaultMapsBtn = document.querySelector("#importDefaultMapsBtn");
   const mapMessage = document.querySelector("#mapMessage");
   const mapsAdminList = document.querySelector("#mapsAdminList");
 
@@ -418,6 +353,29 @@
     proficiency: document.querySelector("#combatProficiency"),
     initiative: document.querySelector("#combatInitiative")
   };
+
+
+
+  function activateAdminTab(tabName) {
+    document.querySelectorAll("[data-admin-tab]").forEach(button => {
+      button.classList.toggle("active", button.dataset.adminTab === tabName);
+    });
+
+    document.querySelectorAll("[data-admin-section]").forEach(section => {
+      section.classList.toggle("is-hidden", section.dataset.adminSection !== tabName);
+    });
+
+    localStorage.setItem("adminActiveTab", tabName);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  document.querySelectorAll("[data-admin-tab]").forEach(button => {
+    button.addEventListener("click", () => {
+      activateAdminTab(button.dataset.adminTab);
+    });
+  });
+
+  activateAdminTab(localStorage.getItem("adminActiveTab") || "home");
 
   const defaultHomeSettings = {
     heroTitle: "ПОГОНЯ ЗА КРИСТАЛАМИ. МЕЖДУ ПЕПЛОМ И ОТЧАЯНИЕМ",
@@ -860,6 +818,50 @@
     editingMapId = mapId;
     await loadMapsAdmin();
   });
+
+
+
+  const defaultMaps = [
+    {
+      docId: "map-baarm",
+      order: 1,
+      title: "Баарм",
+      category: "Город",
+      image: "../assets/Maps/baarm-map.jpg",
+      description: "Главный город кампании."
+    },
+    {
+      docId: "map-ash-temple",
+      order: 2,
+      title: "Храм Пепла",
+      category: "Храм",
+      image: "../assets/Maps/ash-temple.jpg",
+      description: "Святилище, где древний огонь до сих пор не погас."
+    },
+    {
+      docId: "map-lions-claws",
+      order: 3,
+      title: "Львиные Когти",
+      category: "Таверна",
+      image: "../assets/Maps/lions-claws.png",
+      description: "Любимое место авантюристов Баарма."
+    }
+  ];
+
+  if (importDefaultMapsBtn) {
+    importDefaultMapsBtn.addEventListener("click", async () => {
+      if (!confirm("Импортировать старые карты в Firebase? Если такие карты уже есть, они будут обновлены.")) return;
+
+      for (const map of defaultMaps) {
+        const { docId, ...mapData } = map;
+        await db.collection("maps").doc(docId).set(mapData);
+      }
+
+      mapMessage.textContent = "Старые карты импортированы в Firebase.";
+      await loadMapsAdmin();
+      activateAdminTab("maps");
+    });
+  }
 
   clearMapBtn.addEventListener("click", clearMapForm);
 
@@ -1316,6 +1318,5 @@
   loadJournalEntries();
   loadCharacters();
 </script>
-
 </body>
 </html>
