@@ -18,6 +18,30 @@
   <h1>Админ-панель</h1>
   <p>Управление кодексом кампании.</p>
 
+  <section class="quest-card admin-home-card">
+    <h2>Главная страница</h2>
+    <p class="admin-section-note">Эти поля меняют главный экран сайта без правки кода.</p>
+
+    <h3>Главный баннер</h3>
+    <textarea id="homeHeroTitle" placeholder="Главный заголовок"></textarea>
+    <textarea id="homeHeroSubtitle" placeholder="Подзаголовок"></textarea>
+    <input id="homeButtonText" placeholder="Текст кнопки">
+    <input id="homeButtonLink" placeholder="Ссылка кнопки, например pages/journal.html">
+
+    <h3>Последняя сессия</h3>
+    <textarea id="homeSessionBullets" placeholder="Каждый пункт с новой строки"></textarea>
+
+    <h3>Карточка персонажа на главной</h3>
+    <input id="homeFeaturedName" placeholder="Имя персонажа">
+    <textarea id="homeFeaturedSubtitle" placeholder="Краткое описание персонажа"></textarea>
+    <input id="homeFeaturedImage" placeholder="Путь к изображению, например assets/Characters/bjorn.jpg">
+
+    <button id="saveHomeBtn" class="main-button">Сохранить главную</button>
+    <button id="resetHomeBtn" class="main-button" type="button">Вернуть текущие тексты</button>
+
+    <p id="homeMessage"></p>
+  </section>
+
   <section class="quest-card">
     <h2 id="formTitle">Новый квест</h2>
 
@@ -128,6 +152,18 @@
   let editingCharacterId = null;
   let currentCharacterData = null;
 
+  const homeHeroTitle = document.querySelector("#homeHeroTitle");
+  const homeHeroSubtitle = document.querySelector("#homeHeroSubtitle");
+  const homeButtonText = document.querySelector("#homeButtonText");
+  const homeButtonLink = document.querySelector("#homeButtonLink");
+  const homeSessionBullets = document.querySelector("#homeSessionBullets");
+  const homeFeaturedName = document.querySelector("#homeFeaturedName");
+  const homeFeaturedSubtitle = document.querySelector("#homeFeaturedSubtitle");
+  const homeFeaturedImage = document.querySelector("#homeFeaturedImage");
+  const saveHomeBtn = document.querySelector("#saveHomeBtn");
+  const resetHomeBtn = document.querySelector("#resetHomeBtn");
+  const homeMessage = document.querySelector("#homeMessage");
+
   const formTitle = document.querySelector("#formTitle");
   const saveQuestBtn = document.querySelector("#saveQuestBtn");
   const clearFormBtn = document.querySelector("#clearFormBtn");
@@ -188,6 +224,71 @@
     proficiency: document.querySelector("#combatProficiency"),
     initiative: document.querySelector("#combatInitiative")
   };
+
+  const defaultHomeSettings = {
+    heroTitle: "ПОГОНЯ ЗА КРИСТАЛАМИ. МЕЖДУ ПЕПЛОМ И ОТЧАЯНИЕМ",
+    heroSubtitle: "Тёмный мир, где древние боги оставили после себя лишь пепел, забытые артефакты и легенды, чьи последние страницы ещё не написаны...",
+    buttonText: "Открыть хроники",
+    buttonLink: "pages/journal.html",
+    sessionBullets: [
+      "Партия добыла последний кристалл и везёт его на корабле обратно в город.",
+      "Сир Эдрик в сговоре с Олафом отправил врага в портал.",
+      "Фабий Байл — злодей или непонятый гений?",
+      "Бьёрн и Торадин нашли свою трагичную любовь."
+    ],
+    featuredName: "Бьёрн Стронгхарт",
+    featuredSubtitle: "Дварф-клерик Домена Жизни. Служитель Сигмара.",
+    featuredImage: "assets/Characters/bjorn.jpg"
+  };
+
+  function fillHomeForm(settings = defaultHomeSettings) {
+    homeHeroTitle.value = settings.heroTitle || "";
+    homeHeroSubtitle.value = settings.heroSubtitle || "";
+    homeButtonText.value = settings.buttonText || "";
+    homeButtonLink.value = settings.buttonLink || "";
+    homeSessionBullets.value = Array.isArray(settings.sessionBullets)
+      ? settings.sessionBullets.join("\n")
+      : "";
+    homeFeaturedName.value = settings.featuredName || "";
+    homeFeaturedSubtitle.value = settings.featuredSubtitle || "";
+    homeFeaturedImage.value = settings.featuredImage || "";
+  }
+
+  function getHomeFormData() {
+    return {
+      heroTitle: homeHeroTitle.value.trim(),
+      heroSubtitle: homeHeroSubtitle.value.trim(),
+      buttonText: homeButtonText.value.trim(),
+      buttonLink: homeButtonLink.value.trim(),
+      sessionBullets: homeSessionBullets.value
+        .split(/\n+/)
+        .map(item => item.trim())
+        .filter(Boolean),
+      featuredName: homeFeaturedName.value.trim(),
+      featuredSubtitle: homeFeaturedSubtitle.value.trim(),
+      featuredImage: homeFeaturedImage.value.trim()
+    };
+  }
+
+  async function loadHomeSettings() {
+    const doc = await db.collection("site").doc("home").get();
+
+    if (doc.exists) {
+      fillHomeForm({ ...defaultHomeSettings, ...doc.data() });
+    } else {
+      fillHomeForm(defaultHomeSettings);
+    }
+  }
+
+  saveHomeBtn.addEventListener("click", async () => {
+    await db.collection("site").doc("home").set(getHomeFormData());
+    homeMessage.textContent = "Главная страница обновлена.";
+  });
+
+  resetHomeBtn.addEventListener("click", () => {
+    fillHomeForm(defaultHomeSettings);
+    homeMessage.textContent = "Вернул текущие тексты. Нажми «Сохранить главную», чтобы записать их в Firebase.";
+  });
 
   function clearForm() {
     editingQuestId = null;
@@ -532,6 +633,7 @@
     characterSelect.value = "";
   });
 
+  loadHomeSettings();
   loadQuests();
   loadJournalEntries();
   loadCharacters();

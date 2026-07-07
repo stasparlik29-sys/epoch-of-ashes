@@ -1,3 +1,49 @@
+const homeHeroTitle = document.querySelector("#homeHeroTitle");
+const homeHeroSubtitle = document.querySelector("#homeHeroSubtitle");
+const homeHeroButton = document.querySelector("#homeHeroButton");
+const homeSessionList = document.querySelector("#homeSessionList");
+const homeFeaturedName = document.querySelector("#homeFeaturedName");
+const homeFeaturedSubtitle = document.querySelector("#homeFeaturedSubtitle");
+const homeFeaturedImage = document.querySelector("#homeFeaturedImage");
+
+function highlightFirstWords(text) {
+  const parts = text.split(" ");
+  if (parts.length < 2) return text;
+
+  const first = parts.slice(0, 2).join(" ");
+  const rest = parts.slice(2).join(" ");
+
+  return `<strong>${first}</strong>${rest ? " " + rest : ""}`;
+}
+
+if (homeHeroTitle) {
+  db.collection("site").doc("home").get().then(doc => {
+    if (!doc.exists) return;
+
+    const settings = doc.data();
+
+    if (settings.heroTitle) homeHeroTitle.textContent = settings.heroTitle;
+    if (settings.heroSubtitle) homeHeroSubtitle.textContent = settings.heroSubtitle;
+
+    if (settings.buttonText) homeHeroButton.textContent = settings.buttonText;
+    if (settings.buttonLink) homeHeroButton.href = settings.buttonLink;
+
+    if (Array.isArray(settings.sessionBullets) && settings.sessionBullets.length) {
+      homeSessionList.innerHTML = settings.sessionBullets
+        .map(item => `<li>${highlightFirstWords(item)}</li>`)
+        .join("");
+    }
+
+    if (settings.featuredName) {
+      homeFeaturedName.textContent = settings.featuredName;
+      homeFeaturedImage.alt = settings.featuredName;
+    }
+
+    if (settings.featuredSubtitle) homeFeaturedSubtitle.textContent = settings.featuredSubtitle;
+    if (settings.featuredImage) homeFeaturedImage.src = settings.featuredImage;
+  });
+}
+
 const charactersCodex = document.querySelector("#charactersCodex");
 
 if (charactersCodex) {
@@ -334,55 +380,3 @@ if (customRollInput && customRollButton && customRollDetails && diceHistory && d
       diceHistory.innerHTML;
   });
 }
-/* ==========================================
-   Фоновая музыка для всего сайта
-========================================== */
-
-const musicPath = window.location.pathname.includes("/pages/")
-  ? "../assets/Music/music.mp3"
-  : "assets/Music/music.mp3";
-
-const backgroundMusic = new Audio(musicPath);
-
-backgroundMusic.loop = true;
-backgroundMusic.volume = 0.25;
-
-const savedTime = Number(localStorage.getItem("musicTime") || 0);
-const musicDisabled = localStorage.getItem("musicDisabled") === "true";
-
-backgroundMusic.currentTime = savedTime;
-
-const musicButton = document.createElement("button");
-musicButton.className = "music-button";
-musicButton.innerHTML = musicDisabled ? "🔇" : "♪";
-
-document.body.appendChild(musicButton);
-
-function tryStartMusic() {
-  if (musicDisabled) return;
-
-  backgroundMusic.play().catch(() => {});
-}
-
-document.addEventListener("click", tryStartMusic, { once: true });
-document.addEventListener("keydown", tryStartMusic, { once: true });
-
-setInterval(() => {
-  if (!backgroundMusic.paused) {
-    localStorage.setItem("musicTime", backgroundMusic.currentTime);
-  }
-}, 1000);
-
-musicButton.addEventListener("click", async (event) => {
-  event.stopPropagation();
-
-  if (localStorage.getItem("musicDisabled") === "true") {
-    localStorage.setItem("musicDisabled", "false");
-    musicButton.innerHTML = "♪";
-    await backgroundMusic.play().catch(() => {});
-  } else {
-    localStorage.setItem("musicDisabled", "true");
-    musicButton.innerHTML = "🔇";
-    backgroundMusic.pause();
-  }
-});

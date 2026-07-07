@@ -900,3 +900,45 @@ body.admin-page #deleteCharacterBtn{
   }
   body.admin-page .top-nav{position:static;}
 }
+
+
+/* ===========================
+   Админка: редактирование главной
+=========================== */
+body.admin-page .admin-section-note{
+  margin: -8px 0 22px;
+  color:#9c8156;
+  font-size:17px;
+  line-height:1.5;
+}
+
+body.admin-page .admin-home-card{
+  border-color:#7b5626;
+  background:
+    radial-gradient(circle at top left, rgba(221,180,109,.12), transparent 36%),
+    linear-gradient(145deg,rgba(19,14,9,.96),rgba(7,6,5,.94));
+}
+
+body.admin-page #homeHeroTitle,
+body.admin-page #homeHeroSubtitle,
+body.admin-page #homeSessionBullets,
+body.admin-page #homeFeaturedSubtitle{
+  min-height:110px;
+  grid-column:1/-1;
+}
+
+body.admin-page #homeSessionBullets{
+  min-height:150px;
+}
+
+body.admin-page #saveHomeBtn,
+body.admin-page #resetHomeBtn{
+  min-width:260px;
+}
+
+body.admin-page #homeMessage{
+  color:#ffd37a;
+  margin-top:18px;
+  font-size:18px;
+  grid-column:1/-1;
+}
