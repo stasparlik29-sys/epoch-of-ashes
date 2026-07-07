@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Админ-панель — Эпоха Пепла</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <main class="page-screen">
+    <nav class="top-nav">
+      <a href="index.html">Главная</a>
+      <a href="pages/quests.html">Квесты</a>
+    </nav>
+
+    <h1>Админ-панель</h1>
+    <p>Добавление новых записей в кодекс кампании.</p>
+
+    <section class="quest-card">
+      <h2>Новый квест</h2>
+
+      <input id="questTitle" placeholder="Название квеста">
+      <textarea id="questDescription" placeholder="Описание квеста"></textarea>
+      <input id="questDifficulty" placeholder="Сложность">
+      <input id="questGiver" placeholder="Кто выдал">
+      <input id="questReward" placeholder="Награда">
+
+      <select id="questStatus">
+        <option value="active">Активный</option>
+        <option value="completed">Завершён</option>
+        <option value="failed">Провален</option>
+      </select>
+
+      <button id="saveQuestBtn" class="main-button">Сохранить квест</button>
+
+      <p id="adminMessage"></p>
+    </section>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/12.15.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore-compat.js"></script>
+  <script src="firebase.js"></script>
+
+  <script>
+    const saveQuestBtn = document.querySelector("#saveQuestBtn");
+    const adminMessage = document.querySelector("#adminMessage");
+
+    saveQuestBtn.addEventListener("click", async () => {
+      const quest = {
+        id: Date.now(),
+        title: document.querySelector("#questTitle").value.trim(),
+        description: document.querySelector("#questDescription").value.trim(),
+        difficulty: document.querySelector("#questDifficulty").value.trim(),
+        giver: document.querySelector("#questGiver").value.trim(),
+        reward: document.querySelector("#questReward").value.trim(),
+        status: document.querySelector("#questStatus").value
+      };
+
+      await db.collection("quests").doc(`quest-${quest.id}`).set(quest);
+
+      adminMessage.textContent = "Квест сохранён.";
+    });
+  </script>
+
+</body>
+</html>
