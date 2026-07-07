@@ -475,3 +475,37 @@ text-shadow:0 0 20px rgba(221,180,109,.15);
         filter: drop-shadow(0 0 28px rgba(221,180,109,.75));
     }
 }
+.music-button{
+    position:fixed;
+    right:24px;
+    bottom:24px;
+    width:58px;
+    height:58px;
+
+    border-radius:50%;
+    border:1px solid #8a5d2b;
+
+    background:rgba(15,10,6,.92);
+
+    color:#ddb46d;
+
+    font-size:24px;
+
+    cursor:pointer;
+
+    z-index:9999;
+
+    transition:.25s;
+}
+
+.music-button:hover{
+
+    color:#fff2c9;
+
+    border-color:#ddb46d;
+
+    transform:scale(1.08);
+
+    box-shadow:0 0 20px rgba(221,180,109,.25);
+
+}

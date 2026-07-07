@@ -334,3 +334,37 @@ if (customRollInput && customRollButton && customRollDetails && diceHistory && d
       diceHistory.innerHTML;
   });
 }
+/* ==========================================
+   Фоновая музыка для всего сайта
+========================================== */
+
+const musicPath = window.location.pathname.includes("/pages/")
+  ? "../assets/Music/music.mp3"
+  : "assets/Music/music.mp3";
+
+const backgroundMusic = new Audio(musicPath);
+
+backgroundMusic.loop = true;
+backgroundMusic.volume = 0.25;
+
+const musicButton = document.createElement("button");
+musicButton.className = "music-button";
+musicButton.innerHTML = "🔇";
+
+document.body.appendChild(musicButton);
+
+let musicEnabled = false;
+
+musicButton.addEventListener("click", async (event) => {
+  event.stopPropagation();
+
+  if (!musicEnabled) {
+    await backgroundMusic.play().catch(() => {});
+    musicEnabled = true;
+    musicButton.innerHTML = "♪";
+  } else {
+    backgroundMusic.pause();
+    musicEnabled = false;
+    musicButton.innerHTML = "🔇";
+  }
+});
