@@ -1334,3 +1334,236 @@ body.admin-page .top-nav .admin-tab-button{
   -webkit-appearance:none;
   cursor:pointer;
 }
+
+
+/* ===========================
+   Города: премиальный кодекс
+=========================== */
+.city-codex-shell{
+  display:block;
+}
+
+.city-codex-layout{
+  display:grid;
+  grid-template-columns:300px minmax(0,1fr);
+  gap:28px;
+  align-items:start;
+}
+
+.city-codex-list{
+  position:sticky;
+  top:24px;
+  padding:24px;
+  border:1px solid #4b3418;
+  border-radius:18px;
+  background:linear-gradient(145deg,rgba(19,14,9,.95),rgba(7,6,5,.92));
+  box-shadow:0 0 35px rgba(0,0,0,.34);
+}
+
+.city-codex-list h2{
+  color:#ddb46d;
+  font-size:30px;
+  margin-bottom:16px;
+}
+
+.city-search-input{
+  width:100%;
+  margin-bottom:16px;
+  padding:13px 14px;
+  border:1px solid #5d421f;
+  border-radius:12px;
+  outline:none;
+  background:rgba(5,4,3,.72);
+  color:#fff2c9;
+  font-family:Georgia,serif;
+  font-size:16px;
+}
+
+.city-search-input::placeholder{
+  color:rgba(216,196,154,.55);
+}
+
+.city-list-items{
+  display:grid;
+  gap:10px;
+  max-height:70vh;
+  overflow:auto;
+  padding-right:4px;
+}
+
+.city-list-item{
+  width:100%;
+  text-align:left;
+  padding:15px 16px;
+  border:1px solid #4b3418;
+  border-radius:12px;
+  background:rgba(10,8,6,.68);
+  color:#d9c391;
+  cursor:pointer;
+  font-family:Georgia,serif;
+  transition:.25s;
+}
+
+.city-list-item strong{
+  display:block;
+  color:#ffd37a;
+  font-size:19px;
+  margin-bottom:5px;
+}
+
+.city-list-item span{
+  display:block;
+  color:#9c8156;
+  font-size:14px;
+}
+
+.city-list-item:hover,
+.city-list-item.active{
+  border-color:#ddb46d;
+  background:#1b140d;
+  box-shadow:0 0 20px rgba(221,180,109,.14);
+  transform:translateY(-2px);
+}
+
+.city-codex-profile{
+  overflow:hidden;
+  border:1px solid #4b3418;
+  border-radius:20px;
+  background:linear-gradient(145deg,rgba(19,14,9,.96),rgba(7,6,5,.93));
+  box-shadow:0 0 40px rgba(0,0,0,.42);
+  animation:fadeUp .45s ease;
+}
+
+.city-banner{
+  position:relative;
+  height:430px;
+  border-bottom:1px solid #4b3418;
+  background:rgba(8,7,5,.85);
+  overflow:hidden;
+}
+
+.city-banner img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  object-position:center;
+  display:block;
+}
+
+.city-banner::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(to bottom,rgba(7,6,5,.08),rgba(7,6,5,.30));
+  pointer-events:none;
+}
+
+.city-banner-empty{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#9c8156;
+  font-size:20px;
+}
+
+.city-profile-body{
+  padding:42px;
+}
+
+.city-profile-body .codex-label{
+  color:#9c8156;
+  text-transform:uppercase;
+  letter-spacing:4px;
+  font-size:14px;
+  margin-bottom:10px;
+}
+
+.city-profile-body h2{
+  color:#ddb46d;
+  font-size:56px;
+  line-height:1.05;
+  margin-bottom:14px;
+}
+
+.city-summary{
+  max-width:900px;
+  color:#d8c49a;
+  font-size:21px;
+  line-height:1.65;
+}
+
+.city-stats-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:14px;
+  margin:30px 0;
+}
+
+.city-stats-grid div{
+  padding:16px;
+  border:1px solid #4b3418;
+  border-radius:14px;
+  background:rgba(10,8,6,.68);
+}
+
+.city-stats-grid span{
+  display:block;
+  margin-bottom:7px;
+  color:#9c8156;
+  text-transform:uppercase;
+  letter-spacing:2px;
+  font-size:12px;
+}
+
+.city-stats-grid strong{
+  color:#ffd37a;
+  font-size:18px;
+}
+
+.city-text-panel{
+  padding-top:24px;
+  border-top:1px solid #4b3418;
+}
+
+.city-text-panel h3{
+  color:#ddb46d;
+  font-size:30px;
+  margin-bottom:18px;
+}
+
+.city-text-panel p{
+  color:#d8c49a;
+  font-size:19px;
+  line-height:1.85;
+  margin-bottom:16px;
+}
+
+@media(max-width:1000px){
+  .city-codex-layout{
+    grid-template-columns:1fr;
+  }
+
+  .city-codex-list{
+    position:static;
+  }
+
+  .city-list-items{
+    max-height:none;
+  }
+
+  .city-banner{
+    height:300px;
+  }
+
+  .city-profile-body{
+    padding:28px;
+  }
+
+  .city-profile-body h2{
+    font-size:42px;
+  }
+
+  .city-stats-grid{
+    grid-template-columns:1fr;
+  }
+}

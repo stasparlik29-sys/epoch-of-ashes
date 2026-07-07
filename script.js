@@ -111,7 +111,7 @@ if (citiesContainer) {
       const cities = [];
 
       snapshot.forEach(doc => {
-        cities.push(doc.data());
+        cities.push({ docId: doc.id, ...doc.data() });
       });
 
       cities.sort((a, b) => Number(a.order || 0) - Number(b.order || 0));
@@ -126,24 +126,81 @@ if (citiesContainer) {
         return;
       }
 
-      citiesContainer.innerHTML = cities.map(city => `
-        <article class="codex-card city-card ${city.image ? "" : "no-image"}">
-          ${city.image ? `<img src="${city.image}" alt="${city.name}">` : ""}
-          <div class="codex-card-body">
-            <span>${city.region || "Город"}</span>
-            <h2>${city.name || "Без названия"}</h2>
-            <p>${city.summary || ""}</p>
-            <div class="codex-card-meta">
-              <div><span>Статус</span><strong>${city.status || "—"}</strong></div>
-              <div><span>Население</span><strong>${city.population || "—"}</strong></div>
-              <div><span>Власть</span><strong>${city.ruler || "—"}</strong></div>
-            </div>
-            <div class="codex-card-text">
-              ${paragraphsHtml(city.description)}
-            </div>
-          </div>
-        </article>
-      `).join("");
+      let selectedCityIndex = 0;
+
+      function renderCity(index) {
+        const city = cities[index];
+
+        citiesContainer.innerHTML = `
+          <section class="city-codex-layout">
+            <aside class="city-codex-list">
+              <h2>Список городов</h2>
+              <input id="citySearchInput" class="city-search-input" placeholder="Поиск города..." autocomplete="off">
+              <div id="cityListItems" class="city-list-items">
+                ${cities.map((item, itemIndex) => `
+                  <button class="city-list-item ${itemIndex === index ? "active" : ""}" data-index="${itemIndex}">
+                    <strong>${item.name || "Без названия"}</strong>
+                    <span>${item.region || item.status || "Город"}</span>
+                  </button>
+                `).join("")}
+              </div>
+            </aside>
+
+            <article class="city-codex-profile">
+              ${city.image ? `
+                <div class="city-banner">
+                  <img src="${city.image}" alt="${city.name || "Город"}">
+                </div>
+              ` : `
+                <div class="city-banner city-banner-empty">
+                  <span>Изображение города не добавлено</span>
+                </div>
+              `}
+
+              <div class="city-profile-body">
+                <p class="codex-label">${city.region || "Город"}</p>
+                <h2>${city.name || "Без названия"}</h2>
+                <p class="city-summary">${city.summary || ""}</p>
+
+                <div class="city-stats-grid">
+                  <div><span>Статус</span><strong>${city.status || "—"}</strong></div>
+                  <div><span>Население</span><strong>${city.population || "—"}</strong></div>
+                  <div><span>Власть</span><strong>${city.ruler || "—"}</strong></div>
+                </div>
+
+                <section class="city-text-panel">
+                  <h3>Описание</h3>
+                  ${paragraphsHtml(city.description)}
+                </section>
+              </div>
+            </article>
+          </section>
+        `;
+
+        const listItems = document.querySelectorAll(".city-list-item");
+        const searchInput = document.querySelector("#citySearchInput");
+
+        listItems.forEach(button => {
+          button.addEventListener("click", () => {
+            selectedCityIndex = Number(button.dataset.index);
+            renderCity(selectedCityIndex);
+          });
+        });
+
+        if (searchInput) {
+          searchInput.addEventListener("input", () => {
+            const query = searchInput.value.trim().toLowerCase();
+
+            document.querySelectorAll(".city-list-item").forEach(button => {
+              const city = cities[Number(button.dataset.index)];
+              const searchText = `${city.name || ""} ${city.region || ""} ${city.status || ""}`.toLowerCase();
+              button.style.display = searchText.includes(query) ? "block" : "none";
+            });
+          });
+        }
+      }
+
+      renderCity(selectedCityIndex);
     });
 }
 
