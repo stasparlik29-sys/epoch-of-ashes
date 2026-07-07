@@ -62,7 +62,9 @@
     <textarea id="characterDescription" placeholder="Краткое описание"></textarea>
     <textarea id="characterBiography" placeholder="Полная биография"></textarea>
 
-    <button id="saveCharacterBtn" class="main-button">Сохранить персонажа</button>
+    <button id="newCharacterBtn" class="main-button" type="button">Новый персонаж</button>
+<button id="saveCharacterBtn" class="main-button">Сохранить персонажа</button>
+<button id="deleteCharacterBtn" class="main-button" type="button">Удалить персонажа</button>
 
     <p id="characterMessage"></p>
   </section>
@@ -102,6 +104,9 @@
   const characterDescription = document.querySelector("#characterDescription");
   const characterBiography = document.querySelector("#characterBiography");
   const characterMessage = document.querySelector("#characterMessage");
+  const saveCharacterBtn = document.querySelector("#saveCharacterBtn");
+  const newCharacterBtn = document.querySelector("#newCharacterBtn");
+const deleteCharacterBtn = document.querySelector("#deleteCharacterBtn");
 
   function clearForm() {
     editingQuestId = null;
@@ -208,7 +213,25 @@
       `;
     });
   }
+function clearCharacterForm() {
+  editingCharacterId = null;
+  currentCharacterData = null;
 
+  characterSelect.value = "";
+
+  characterName.value = "";
+  characterRace.value = "";
+  characterClass.value = "";
+  characterDomain.value = "";
+  characterGod.value = "";
+  characterStatus.value = "";
+  characterRole.value = "";
+  characterImage.value = "";
+  characterDescription.value = "";
+  characterBiography.value = "";
+
+  characterMessage.textContent = "Создание нового персонажа.";
+}
   characterSelect.addEventListener("change", async () => {
     const docId = characterSelect.value;
     if (!docId) return;
@@ -232,31 +255,71 @@
   });
 
   saveCharacterBtn.addEventListener("click", async () => {
-    if (!editingCharacterId || !currentCharacterData) {
-      characterMessage.textContent = "Сначала выбери персонажа.";
-      return;
-    }
+  const characterId = editingCharacterId || `character-${Date.now()}`;
 
-    const updatedCharacter = {
-      ...currentCharacterData,
-      name: characterName.value.trim(),
-      race: characterRace.value.trim(),
-      class: characterClass.value.trim(),
-      domain: characterDomain.value.trim(),
-      god: characterGod.value.trim(),
-      status: characterStatus.value.trim(),
-      role: characterRole.value.trim(),
-      image: characterImage.value.trim(),
-      description: characterDescription.value.trim(),
-      biography: characterBiography.value.trim()
-    };
+  const updatedCharacter = {
+    ...(currentCharacterData || {}),
+    name: characterName.value.trim(),
+    race: characterRace.value.trim(),
+    class: characterClass.value.trim(),
+    domain: characterDomain.value.trim(),
+    domainLabel: "Особенность",
+    god: characterGod.value.trim(),
+    status: characterStatus.value.trim(),
+    role: characterRole.value.trim(),
+    image: characterImage.value.trim(),
+    description: characterDescription.value.trim(),
+    biography: characterBiography.value.trim(),
 
-    await db.collection("characters").doc(editingCharacterId).set(updatedCharacter);
+    abilities: currentCharacterData?.abilities || {
+      str: { value: "10", mod: "+0" },
+      dex: { value: "10", mod: "+0" },
+      con: { value: "10", mod: "+0" },
+      int: { value: "10", mod: "+0" },
+      wis: { value: "10", mod: "+0" },
+      cha: { value: "10", mod: "+0" }
+    },
 
-    characterMessage.textContent = "Персонаж обновлён.";
-    loadCharacters();
-  });
+    combat: currentCharacterData?.combat || {
+      level: "1",
+      ac: "10",
+      hp: "10",
+      speed: "30 фт.",
+      proficiency: "+2",
+      initiative: "+0"
+    },
 
+    personality: currentCharacterData?.personality || "",
+    ideals: currentCharacterData?.ideals || "",
+    companion: currentCharacterData?.companion || null
+  };
+
+  await db.collection("characters").doc(characterId).set(updatedCharacter);
+
+  characterMessage.textContent = editingCharacterId ? "Персонаж обновлён." : "Персонаж создан.";
+
+  editingCharacterId = characterId;
+  currentCharacterData = updatedCharacter;
+
+  await loadCharacters();
+characterSelect.value = characterId;
+});
+newCharacterBtn.addEventListener("click", clearCharacterForm);
+
+deleteCharacterBtn.addEventListener("click", async () => {
+  if (!editingCharacterId) {
+    characterMessage.textContent = "Сначала выбери персонажа.";
+    return;
+  }
+
+  if (!confirm("Удалить этого персонажа?")) return;
+
+  await db.collection("characters").doc(editingCharacterId).delete();
+
+  characterMessage.textContent = "Персонаж удалён.";
+  clearCharacterForm();
+  loadCharacters();
+});
   loadQuests();
   loadCharacters();
 </script>
