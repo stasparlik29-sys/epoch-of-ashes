@@ -347,24 +347,42 @@ const backgroundMusic = new Audio(musicPath);
 backgroundMusic.loop = true;
 backgroundMusic.volume = 0.25;
 
+const savedTime = Number(localStorage.getItem("musicTime") || 0);
+const musicDisabled = localStorage.getItem("musicDisabled") === "true";
+
+backgroundMusic.currentTime = savedTime;
+
 const musicButton = document.createElement("button");
 musicButton.className = "music-button";
-musicButton.innerHTML = "🔇";
+musicButton.innerHTML = musicDisabled ? "🔇" : "♪";
 
 document.body.appendChild(musicButton);
 
-let musicEnabled = false;
+function tryStartMusic() {
+  if (musicDisabled) return;
+
+  backgroundMusic.play().catch(() => {});
+}
+
+document.addEventListener("click", tryStartMusic, { once: true });
+document.addEventListener("keydown", tryStartMusic, { once: true });
+
+setInterval(() => {
+  if (!backgroundMusic.paused) {
+    localStorage.setItem("musicTime", backgroundMusic.currentTime);
+  }
+}, 1000);
 
 musicButton.addEventListener("click", async (event) => {
   event.stopPropagation();
 
-  if (!musicEnabled) {
-    await backgroundMusic.play().catch(() => {});
-    musicEnabled = true;
+  if (localStorage.getItem("musicDisabled") === "true") {
+    localStorage.setItem("musicDisabled", "false");
     musicButton.innerHTML = "♪";
+    await backgroundMusic.play().catch(() => {});
   } else {
-    backgroundMusic.pause();
-    musicEnabled = false;
+    localStorage.setItem("musicDisabled", "true");
     musicButton.innerHTML = "🔇";
+    backgroundMusic.pause();
   }
 });
