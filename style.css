@@ -509,3 +509,394 @@ text-shadow:0 0 20px rgba(221,180,109,.15);
     box-shadow:0 0 20px rgba(221,180,109,.25);
 
 }
+
+/* ===========================
+   Админ-панель: Панель Мастера
+=========================== */
+body.admin-page{
+  min-height:100vh;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(221,180,109,.10), transparent 34%),
+    radial-gradient(circle at 85% 12%, rgba(138,93,43,.12), transparent 32%),
+    linear-gradient(180deg,#050403 0%,#090705 48%,#050403 100%);
+  color:#ead7aa;
+}
+
+body.admin-page .page-screen{
+  max-width:1500px;
+  padding:44px 56px 90px;
+}
+
+body.admin-page .top-nav{
+  position:sticky;
+  top:0;
+  z-index:20;
+  display:flex;
+  flex-wrap:wrap;
+  gap:12px;
+  align-items:center;
+  margin:-18px -18px 28px;
+  padding:18px;
+  background:linear-gradient(180deg,rgba(7,6,5,.96),rgba(7,6,5,.78));
+  border-bottom:1px solid rgba(138,93,43,.35);
+  backdrop-filter:blur(10px);
+}
+
+body.admin-page .top-nav a{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:42px;
+  padding:10px 18px;
+  border:1px solid #4b3418;
+  border-radius:999px;
+  background:rgba(15,10,6,.74);
+  color:#d9c391;
+  font-weight:700;
+  transition:.25s;
+}
+
+body.admin-page .top-nav a:hover{
+  color:#fff2c9;
+  border-color:#ddb46d;
+  transform:translateY(-2px);
+  box-shadow:0 0 22px rgba(221,180,109,.14);
+}
+
+body.admin-page > .page-screen > h1{
+  position:relative;
+  color:#ffd37a;
+  font-size:64px;
+  line-height:1;
+  margin:12px 0 8px;
+  letter-spacing:1px;
+  text-shadow:0 0 34px rgba(221,180,109,.14);
+}
+
+body.admin-page > .page-screen > h1::before{
+  content:"Панель мастера";
+  display:block;
+  margin-bottom:8px;
+  color:#9c8156;
+  font-size:14px;
+  text-transform:uppercase;
+  letter-spacing:5px;
+}
+
+body.admin-page > .page-screen > p{
+  margin-bottom:34px;
+  color:#d8c49a;
+  font-size:22px;
+}
+
+body.admin-page .quest-card{
+  position:relative;
+  margin:0 0 28px;
+  padding:32px;
+  border:1px solid rgba(138,93,43,.72);
+  border-radius:22px;
+  background:
+    linear-gradient(145deg,rgba(24,17,10,.96),rgba(7,6,5,.94)),
+    radial-gradient(circle at 10% 0%,rgba(221,180,109,.12),transparent 34%);
+  box-shadow:
+    0 22px 60px rgba(0,0,0,.42),
+    inset 0 1px 0 rgba(255,211,122,.04);
+  transform:none;
+}
+
+body.admin-page .quest-card:hover{
+  transform:none;
+  border-color:#8a5d2b;
+  box-shadow:
+    0 22px 60px rgba(0,0,0,.42),
+    0 0 34px rgba(221,180,109,.08),
+    inset 0 1px 0 rgba(255,211,122,.05);
+}
+
+body.admin-page .quest-card > h2{
+  grid-column:1/-1;
+  margin:0 0 24px;
+  padding-bottom:16px;
+  border-bottom:1px solid rgba(138,93,43,.42);
+  color:#ffd37a;
+  font-size:38px;
+}
+
+body.admin-page .quest-card > h3{
+  grid-column:1/-1;
+  margin:22px 0 8px;
+  color:#ddb46d;
+  font-size:28px;
+}
+
+body.admin-page .quest-card:first-of-type,
+body.admin-page .quest-card:nth-of-type(3){
+  display:grid;
+  grid-template-columns:1.2fr .9fr .9fr .9fr .9fr 220px;
+  gap:16px;
+  align-items:start;
+}
+
+body.admin-page .quest-card:nth-of-type(5){
+  display:grid;
+  grid-template-columns:repeat(6,1fr);
+  gap:16px;
+  align-items:start;
+}
+
+body.admin-page input,
+body.admin-page textarea,
+body.admin-page select{
+  width:100%;
+  min-height:48px;
+  padding:13px 15px;
+  border:1px solid #5d421f;
+  border-radius:12px;
+  outline:none;
+  background:rgba(5,4,3,.72);
+  color:#fff2c9;
+  font-family:Georgia,serif;
+  font-size:16px;
+  box-shadow:inset 0 0 16px rgba(0,0,0,.28);
+  transition:.2s;
+}
+
+body.admin-page textarea{
+  min-height:96px;
+  resize:vertical;
+  line-height:1.45;
+}
+
+body.admin-page input::placeholder,
+body.admin-page textarea::placeholder{
+  color:rgba(216,196,154,.54);
+}
+
+body.admin-page input:focus,
+body.admin-page textarea:focus,
+body.admin-page select:focus{
+  border-color:#ddb46d;
+  box-shadow:
+    0 0 0 3px rgba(221,180,109,.08),
+    inset 0 0 16px rgba(0,0,0,.28);
+}
+
+body.admin-page #questDescription,
+body.admin-page #journalSummary,
+body.admin-page #journalContent,
+body.admin-page #characterDescription,
+body.admin-page #characterBiography,
+body.admin-page #characterPersonality,
+body.admin-page #characterIdeals{
+  grid-column:span 2;
+}
+
+body.admin-page #journalContent{
+  grid-column:1/-1;
+  min-height:180px;
+}
+
+body.admin-page #characterDescription,
+body.admin-page #characterBiography{
+  min-height:120px;
+}
+
+body.admin-page #characterPersonality,
+body.admin-page #characterIdeals{
+  min-height:120px;
+}
+
+body.admin-page .main-button{
+  width:100%;
+  min-height:56px;
+  margin:0;
+  padding:16px 22px;
+  border-radius:12px;
+  background:
+    linear-gradient(180deg,rgba(31,21,11,.92),rgba(10,7,4,.92));
+  color:#ffd37a;
+  border:1px solid #8a5d2b;
+  letter-spacing:4px;
+  font-size:14px;
+  box-shadow:0 0 22px rgba(0,0,0,.22);
+}
+
+body.admin-page .main-button:hover{
+  transform:translateY(-2px);
+  border-color:#ddb46d;
+  color:#fff2c9;
+  box-shadow:0 0 26px rgba(221,180,109,.16);
+}
+
+body.admin-page #clearFormBtn,
+body.admin-page #clearJournalBtn,
+body.admin-page #newCharacterBtn,
+body.admin-page #deleteCharacterBtn{
+  background:rgba(7,6,5,.75);
+}
+
+body.admin-page #adminMessage,
+body.admin-page #journalMessage,
+body.admin-page #characterMessage{
+  grid-column:1/-1;
+  min-height:24px;
+  margin-top:4px;
+  color:#9fe0a1;
+  font-size:18px;
+}
+
+body.admin-page .info-grid{
+  grid-column:1/-1;
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:14px;
+  margin:4px 0 18px;
+}
+
+body.admin-page .info-grid div{
+  padding:16px;
+  border:1px solid rgba(138,93,43,.52);
+  border-radius:16px;
+  background:rgba(8,7,5,.72);
+}
+
+body.admin-page .info-grid span{
+  display:block;
+  margin-bottom:10px;
+  color:#9c8156;
+  text-transform:uppercase;
+  letter-spacing:2px;
+  font-size:12px;
+}
+
+body.admin-page .info-grid input + input{
+  margin-top:10px;
+}
+
+body.admin-page #questsAdminList,
+body.admin-page #journalAdminList{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:16px;
+}
+
+body.admin-page #questsAdminList .quest-info,
+body.admin-page #journalAdminList .quest-info{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:10px;
+  margin:0!important;
+  padding:18px;
+  border:1px solid rgba(138,93,43,.56);
+  border-radius:16px;
+  background:
+    radial-gradient(circle at 0% 0%,rgba(221,180,109,.08),transparent 42%),
+    rgba(8,7,5,.70);
+}
+
+body.admin-page #questsAdminList .quest-info div,
+body.admin-page #journalAdminList .quest-info div{
+  border:0;
+  padding:0;
+  background:transparent;
+}
+
+body.admin-page #questsAdminList .quest-info div:first-child,
+body.admin-page #journalAdminList .quest-info div:first-child{
+  padding-bottom:10px;
+  border-bottom:1px solid rgba(138,93,43,.30);
+}
+
+body.admin-page #questsAdminList .quest-info span,
+body.admin-page #journalAdminList .quest-info span{
+  display:inline-block;
+  margin:0 8px 6px 0;
+  color:#9c8156;
+  text-transform:uppercase;
+  letter-spacing:2px;
+  font-size:12px;
+}
+
+body.admin-page #questsAdminList .quest-info strong,
+body.admin-page #journalAdminList .quest-info strong{
+  color:#ffd37a;
+  font-size:20px;
+}
+
+body.admin-page .editQuestBtn,
+body.admin-page .deleteQuestBtn,
+body.admin-page .editJournalBtn,
+body.admin-page .deleteJournalBtn{
+  min-height:38px;
+  margin:4px 8px 0 0;
+  padding:9px 12px;
+  border:1px solid #5d421f;
+  border-radius:10px;
+  background:rgba(10,8,6,.86);
+  color:#ead7aa;
+  font-family:Georgia,serif;
+  cursor:pointer;
+  transition:.2s;
+}
+
+body.admin-page .editQuestBtn:hover,
+body.admin-page .editJournalBtn:hover{
+  color:#fff2c9;
+  border-color:#ddb46d;
+}
+
+body.admin-page .deleteQuestBtn:hover,
+body.admin-page .deleteJournalBtn:hover{
+  color:#ffb29f;
+  border-color:#8a2b1e;
+}
+
+body.admin-page #characterSelect{
+  grid-column:1/3;
+}
+
+body.admin-page #characterImage,
+body.admin-page #saveCharacterBtn{
+  grid-column:span 2;
+}
+
+body.admin-page #newCharacterBtn,
+body.admin-page #saveCharacterBtn,
+body.admin-page #deleteCharacterBtn{
+  margin-top:8px;
+}
+
+@media(max-width:1100px){
+  body.admin-page .page-screen{padding:28px 20px 72px;}
+  body.admin-page .quest-card:first-of-type,
+  body.admin-page .quest-card:nth-of-type(3),
+  body.admin-page .quest-card:nth-of-type(5){
+    grid-template-columns:1fr 1fr;
+  }
+  body.admin-page #questsAdminList,
+  body.admin-page #journalAdminList,
+  body.admin-page .info-grid{
+    grid-template-columns:1fr;
+  }
+  body.admin-page #questDescription,
+  body.admin-page #journalSummary,
+  body.admin-page #characterDescription,
+  body.admin-page #characterBiography,
+  body.admin-page #characterPersonality,
+  body.admin-page #characterIdeals,
+  body.admin-page #characterSelect,
+  body.admin-page #characterImage,
+  body.admin-page #saveCharacterBtn{
+    grid-column:1/-1;
+  }
+}
+
+@media(max-width:700px){
+  body.admin-page > .page-screen > h1{font-size:44px;}
+  body.admin-page .quest-card:first-of-type,
+  body.admin-page .quest-card:nth-of-type(3),
+  body.admin-page .quest-card:nth-of-type(5){
+    grid-template-columns:1fr;
+  }
+  body.admin-page .top-nav{position:static;}
+}
