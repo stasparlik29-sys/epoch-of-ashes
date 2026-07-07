@@ -14,10 +14,10 @@
     </nav>
 
     <h1>Админ-панель</h1>
-    <p>Добавление новых записей в кодекс кампании.</p>
+    <p>Управление квестами кампании.</p>
 
     <section class="quest-card">
-      <h2>Новый квест</h2>
+      <h2 id="formTitle">Новый квест</h2>
 
       <input id="questTitle" placeholder="Название квеста">
       <textarea id="questDescription" placeholder="Описание квеста"></textarea>
@@ -32,8 +32,14 @@
       </select>
 
       <button id="saveQuestBtn" class="main-button">Сохранить квест</button>
+      <button id="clearFormBtn" class="main-button" type="button">Очистить форму</button>
 
       <p id="adminMessage"></p>
+    </section>
+
+    <section class="quest-card">
+      <h2>Существующие квесты</h2>
+      <div id="questsAdminList"></div>
     </section>
   </main>
 
@@ -42,24 +48,131 @@
   <script src="firebase.js"></script>
 
   <script>
+    let editingQuestId = null;
+
+    const formTitle = document.querySelector("#formTitle");
     const saveQuestBtn = document.querySelector("#saveQuestBtn");
+    const clearFormBtn = document.querySelector("#clearFormBtn");
     const adminMessage = document.querySelector("#adminMessage");
+    const questsAdminList = document.querySelector("#questsAdminList");
+
+    const questTitle = document.querySelector("#questTitle");
+    const questDescription = document.querySelector("#questDescription");
+    const questDifficulty = document.querySelector("#questDifficulty");
+    const questGiver = document.querySelector("#questGiver");
+    const questReward = document.querySelector("#questReward");
+    const questStatus = document.querySelector("#questStatus");
+
+    function clearForm() {
+      editingQuestId = null;
+      formTitle.textContent = "Новый квест";
+
+      questTitle.value = "";
+      questDescription.value = "";
+      questDifficulty.value = "";
+      questGiver.value = "";
+      questReward.value = "";
+      questStatus.value = "active";
+    }
+
+    async function loadQuests() {
+      const snapshot = await db.collection("quests").get();
+      const quests = [];
+
+      snapshot.forEach(doc => {
+        quests.push({
+          docId: doc.id,
+          ...doc.data()
+        });
+      });
+
+      quests.sort((a, b) => Number(a.id) - Number(b.id));
+
+      questsAdminList.innerHTML = quests.map(quest => `
+        <div class="quest-info" style="margin-bottom: 16px;">
+          <div>
+            <span>${getStatusName(quest.status)}</span>
+            <strong>${quest.title}</strong>
+          </div>
+
+          <div>
+            <span>Выдал</span>
+            <strong>${quest.giver}</strong>
+          </div>
+
+          <div>
+            <button class="editQuestBtn" data-id="${quest.docId}">✏️ Редактировать</button>
+            <button class="deleteQuestBtn" data-id="${quest.docId}">🗑️ Удалить</button>
+          </div>
+        </div>
+      `).join("");
+
+      document.querySelectorAll(".editQuestBtn").forEach(button => {
+        button.addEventListener("click", async () => {
+          const docId = button.dataset.id;
+          const doc = await db.collection("quests").doc(docId).get();
+          const quest = doc.data();
+
+          editingQuestId = docId;
+          formTitle.textContent = "Редактирование квеста";
+
+          questTitle.value = quest.title || "";
+          questDescription.value = quest.description || "";
+          questDifficulty.value = quest.difficulty || "";
+          questGiver.value = quest.giver || "";
+          questReward.value = quest.reward || "";
+          questStatus.value = quest.status || "active";
+
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        });
+      });
+
+      document.querySelectorAll(".deleteQuestBtn").forEach(button => {
+        button.addEventListener("click", async () => {
+          const docId = button.dataset.id;
+
+          if (!confirm("Удалить этот квест?")) return;
+
+          await db.collection("quests").doc(docId).delete();
+
+          adminMessage.textContent = "Квест удалён.";
+          clearForm();
+          loadQuests();
+        });
+      });
+    }
+
+    function getStatusName(status) {
+      if (status === "active") return "Активный";
+      if (status === "completed") return "Завершён";
+      if (status === "failed") return "Провален";
+      return "Неизвестно";
+    }
 
     saveQuestBtn.addEventListener("click", async () => {
       const quest = {
-        id: Date.now(),
-        title: document.querySelector("#questTitle").value.trim(),
-        description: document.querySelector("#questDescription").value.trim(),
-        difficulty: document.querySelector("#questDifficulty").value.trim(),
-        giver: document.querySelector("#questGiver").value.trim(),
-        reward: document.querySelector("#questReward").value.trim(),
-        status: document.querySelector("#questStatus").value
+        id: editingQuestId ? Number(editingQuestId.replace("quest-", "")) : Date.now(),
+        title: questTitle.value.trim(),
+        description: questDescription.value.trim(),
+        difficulty: questDifficulty.value.trim(),
+        giver: questGiver.value.trim(),
+        reward: questReward.value.trim(),
+        status: questStatus.value
       };
 
-      await db.collection("quests").doc(`quest-${quest.id}`).set(quest);
+      const docId = editingQuestId || `quest-${quest.id}`;
 
-      adminMessage.textContent = "Квест сохранён.";
+      await db.collection("quests").doc(docId).set(quest);
+
+      adminMessage.textContent = editingQuestId ? "Квест обновлён." : "Квест создан.";
+
+      clearForm();
+      loadQuests();
     });
+
+    clearFormBtn.addEventListener("click", clearForm);
+
+    loadQuests();
   </script>
 
 </body>
