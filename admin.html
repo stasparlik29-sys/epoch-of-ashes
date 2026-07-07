@@ -13,6 +13,8 @@
     <a href="pages/world.html">Мир</a>
     <a href="pages/cities.html">Города</a>
     <a href="pages/locations.html">Локации</a>
+    <a href="pages/maps.html">Карты</a>
+    <a href="pages/bestiary.html">Бестиарий</a>
     <a href="pages/quests.html">Квесты</a>
     <a href="pages/characters.html">Персонажи</a>
     <a href="pages/journal.html">Журнал</a>
@@ -113,6 +115,53 @@
   <section class="quest-card">
     <h2>Локации</h2>
     <div id="locationsAdminList"></div>
+  </section>
+
+  <section class="quest-card admin-map-card">
+    <h2 id="mapFormTitle">Новая карта</h2>
+    <p class="admin-section-note">Карты городов, подземелий, храмов, таверн и боевых сцен.</p>
+
+    <input id="mapOrder" placeholder="Порядок отображения, например 1">
+    <input id="mapTitle" placeholder="Название карты">
+    <input id="mapCategory" placeholder="Категория, например: город, храм, таверна">
+    <input id="mapImage" placeholder="Путь к изображению, например ../assets/Maps/map.jpg">
+    <textarea id="mapDescription" placeholder="Описание карты"></textarea>
+
+    <button id="saveMapBtn" class="main-button">Сохранить карту</button>
+    <button id="clearMapBtn" class="main-button" type="button">Очистить форму</button>
+
+    <p id="mapMessage"></p>
+  </section>
+
+  <section class="quest-card">
+    <h2>Карты</h2>
+    <div id="mapsAdminList"></div>
+  </section>
+
+  <section class="quest-card admin-bestiary-card">
+    <h2 id="beastFormTitle">Новое существо</h2>
+    <p class="admin-section-note">Монстры, демоны, звери, боссы и необычные существа кампании.</p>
+
+    <input id="beastOrder" placeholder="Порядок отображения, например 1">
+    <input id="beastName" placeholder="Название существа">
+    <input id="beastType" placeholder="Тип, например: демон, нежить, зверь">
+    <input id="beastDanger" placeholder="Опасность / CR">
+    <input id="beastAc" placeholder="КД">
+    <input id="beastHp" placeholder="Хиты">
+    <input id="beastImage" placeholder="Путь к изображению, например ../assets/Characters/monster.jpg">
+    <textarea id="beastSummary" placeholder="Краткое описание"></textarea>
+    <textarea id="beastAbilities" placeholder="Способности. Каждая с новой строки."></textarea>
+    <textarea id="beastLore" placeholder="История / легенда. Каждый абзац с новой строки."></textarea>
+
+    <button id="saveBeastBtn" class="main-button">Сохранить существо</button>
+    <button id="clearBeastBtn" class="main-button" type="button">Очистить форму</button>
+
+    <p id="beastMessage"></p>
+  </section>
+
+  <section class="quest-card">
+    <h2>Бестиарий</h2>
+    <div id="bestiaryAdminList"></div>
   </section>
 
   <section class="quest-card">
@@ -224,6 +273,8 @@
   let editingWorldId = null;
   let editingCityId = null;
   let editingLocationId = null;
+  let editingMapId = null;
+  let editingBeastId = null;
   let editingJournalId = null;
   let editingCharacterId = null;
   let currentCharacterData = null;
@@ -279,6 +330,33 @@
   const clearLocationBtn = document.querySelector("#clearLocationBtn");
   const locationMessage = document.querySelector("#locationMessage");
   const locationsAdminList = document.querySelector("#locationsAdminList");
+
+  const mapFormTitle = document.querySelector("#mapFormTitle");
+  const mapOrder = document.querySelector("#mapOrder");
+  const mapTitle = document.querySelector("#mapTitle");
+  const mapCategory = document.querySelector("#mapCategory");
+  const mapImage = document.querySelector("#mapImage");
+  const mapDescription = document.querySelector("#mapDescription");
+  const saveMapBtn = document.querySelector("#saveMapBtn");
+  const clearMapBtn = document.querySelector("#clearMapBtn");
+  const mapMessage = document.querySelector("#mapMessage");
+  const mapsAdminList = document.querySelector("#mapsAdminList");
+
+  const beastFormTitle = document.querySelector("#beastFormTitle");
+  const beastOrder = document.querySelector("#beastOrder");
+  const beastName = document.querySelector("#beastName");
+  const beastType = document.querySelector("#beastType");
+  const beastDanger = document.querySelector("#beastDanger");
+  const beastAc = document.querySelector("#beastAc");
+  const beastHp = document.querySelector("#beastHp");
+  const beastImage = document.querySelector("#beastImage");
+  const beastSummary = document.querySelector("#beastSummary");
+  const beastAbilities = document.querySelector("#beastAbilities");
+  const beastLore = document.querySelector("#beastLore");
+  const saveBeastBtn = document.querySelector("#saveBeastBtn");
+  const clearBeastBtn = document.querySelector("#clearBeastBtn");
+  const beastMessage = document.querySelector("#beastMessage");
+  const bestiaryAdminList = document.querySelector("#bestiaryAdminList");
 
   const formTitle = document.querySelector("#formTitle");
   const saveQuestBtn = document.querySelector("#saveQuestBtn");
@@ -701,6 +779,189 @@
 
   clearLocationBtn.addEventListener("click", clearLocationForm);
 
+  function clearMapForm() {
+    editingMapId = null;
+    mapFormTitle.textContent = "Новая карта";
+    mapOrder.value = "";
+    mapTitle.value = "";
+    mapCategory.value = "";
+    mapImage.value = "";
+    mapDescription.value = "";
+    mapMessage.textContent = "";
+  }
+
+  async function loadMapsAdmin() {
+    const snapshot = await db.collection("maps").get();
+    const maps = [];
+
+    snapshot.forEach(doc => {
+      maps.push({ docId: doc.id, ...doc.data() });
+    });
+
+    maps.sort((a, b) => Number(a.order || 0) - Number(b.order || 0));
+
+    mapsAdminList.innerHTML = maps.map(map => `
+      <div class="admin-list-item">
+        <div>
+          <span>${map.category || "Карта"} · порядок ${map.order || "—"}</span>
+          <strong>${map.title || "Без названия"}</strong>
+          <p>${map.description || ""}</p>
+        </div>
+        <div class="admin-list-actions">
+          <button class="editMapBtn" data-id="${map.docId}">✏️ Редактировать</button>
+          <button class="deleteMapBtn" data-id="${map.docId}">🗑️ Удалить</button>
+        </div>
+      </div>
+    `).join("");
+
+    document.querySelectorAll(".editMapBtn").forEach(button => {
+      button.addEventListener("click", async () => {
+        const docId = button.dataset.id;
+        const doc = await db.collection("maps").doc(docId).get();
+        const map = doc.data();
+
+        editingMapId = docId;
+        mapFormTitle.textContent = "Редактирование карты";
+        mapOrder.value = map.order || "";
+        mapTitle.value = map.title || "";
+        mapCategory.value = map.category || "";
+        mapImage.value = map.image || "";
+        mapDescription.value = map.description || "";
+
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+    });
+
+    document.querySelectorAll(".deleteMapBtn").forEach(button => {
+      button.addEventListener("click", async () => {
+        if (!confirm("Удалить эту карту?")) return;
+
+        await db.collection("maps").doc(button.dataset.id).delete();
+        mapMessage.textContent = "Карта удалена.";
+        clearMapForm();
+        loadMapsAdmin();
+      });
+    });
+  }
+
+  saveMapBtn.addEventListener("click", async () => {
+    const mapId = editingMapId || `map-${Date.now()}`;
+
+    const map = {
+      order: Number(mapOrder.value.trim()) || 0,
+      title: mapTitle.value.trim(),
+      category: mapCategory.value.trim(),
+      image: mapImage.value.trim(),
+      description: mapDescription.value.trim()
+    };
+
+    await db.collection("maps").doc(mapId).set(map);
+    mapMessage.textContent = editingMapId ? "Карта обновлена." : "Карта создана.";
+    editingMapId = mapId;
+    await loadMapsAdmin();
+  });
+
+  clearMapBtn.addEventListener("click", clearMapForm);
+
+  function clearBeastForm() {
+    editingBeastId = null;
+    beastFormTitle.textContent = "Новое существо";
+    beastOrder.value = "";
+    beastName.value = "";
+    beastType.value = "";
+    beastDanger.value = "";
+    beastAc.value = "";
+    beastHp.value = "";
+    beastImage.value = "";
+    beastSummary.value = "";
+    beastAbilities.value = "";
+    beastLore.value = "";
+    beastMessage.textContent = "";
+  }
+
+  async function loadBestiaryAdmin() {
+    const snapshot = await db.collection("bestiary").get();
+    const beasts = [];
+
+    snapshot.forEach(doc => {
+      beasts.push({ docId: doc.id, ...doc.data() });
+    });
+
+    beasts.sort((a, b) => Number(a.order || 0) - Number(b.order || 0));
+
+    bestiaryAdminList.innerHTML = beasts.map(beast => `
+      <div class="admin-list-item">
+        <div>
+          <span>${beast.type || "Существо"} · опасность ${beast.danger || "—"} · порядок ${beast.order || "—"}</span>
+          <strong>${beast.name || "Без названия"}</strong>
+          <p>${beast.summary || ""}</p>
+        </div>
+        <div class="admin-list-actions">
+          <button class="editBeastBtn" data-id="${beast.docId}">✏️ Редактировать</button>
+          <button class="deleteBeastBtn" data-id="${beast.docId}">🗑️ Удалить</button>
+        </div>
+      </div>
+    `).join("");
+
+    document.querySelectorAll(".editBeastBtn").forEach(button => {
+      button.addEventListener("click", async () => {
+        const docId = button.dataset.id;
+        const doc = await db.collection("bestiary").doc(docId).get();
+        const beast = doc.data();
+
+        editingBeastId = docId;
+        beastFormTitle.textContent = "Редактирование существа";
+        beastOrder.value = beast.order || "";
+        beastName.value = beast.name || "";
+        beastType.value = beast.type || "";
+        beastDanger.value = beast.danger || "";
+        beastAc.value = beast.ac || "";
+        beastHp.value = beast.hp || "";
+        beastImage.value = beast.image || "";
+        beastSummary.value = beast.summary || "";
+        beastAbilities.value = adminContentToText(beast.abilities);
+        beastLore.value = adminContentToText(beast.lore);
+
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+    });
+
+    document.querySelectorAll(".deleteBeastBtn").forEach(button => {
+      button.addEventListener("click", async () => {
+        if (!confirm("Удалить это существо?")) return;
+
+        await db.collection("bestiary").doc(button.dataset.id).delete();
+        beastMessage.textContent = "Существо удалено.";
+        clearBeastForm();
+        loadBestiaryAdmin();
+      });
+    });
+  }
+
+  saveBeastBtn.addEventListener("click", async () => {
+    const beastId = editingBeastId || `beast-${Date.now()}`;
+
+    const beast = {
+      order: Number(beastOrder.value.trim()) || 0,
+      name: beastName.value.trim(),
+      type: beastType.value.trim(),
+      danger: beastDanger.value.trim(),
+      ac: beastAc.value.trim(),
+      hp: beastHp.value.trim(),
+      image: beastImage.value.trim(),
+      summary: beastSummary.value.trim(),
+      abilities: normalizeAdminText(beastAbilities.value),
+      lore: normalizeAdminText(beastLore.value)
+    };
+
+    await db.collection("bestiary").doc(beastId).set(beast);
+    beastMessage.textContent = editingBeastId ? "Существо обновлено." : "Существо создано.";
+    editingBeastId = beastId;
+    await loadBestiaryAdmin();
+  });
+
+  clearBeastBtn.addEventListener("click", clearBeastForm);
+
 
   function clearForm() {
     editingQuestId = null;
@@ -1049,6 +1310,8 @@
   loadWorldEntries();
   loadCitiesAdmin();
   loadLocationsAdmin();
+  loadMapsAdmin();
+  loadBestiaryAdmin();
   loadQuests();
   loadJournalEntries();
   loadCharacters();

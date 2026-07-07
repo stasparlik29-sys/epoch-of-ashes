@@ -1221,3 +1221,35 @@ body.admin-page #locationMessage{
 }
 
 .codex-card.no-image{grid-template-columns:1fr;}
+
+
+/* ===========================
+   Карты и бестиарий
+=========================== */
+body.admin-page .admin-map-card textarea#mapDescription,
+body.admin-page .admin-bestiary-card textarea#beastLore,
+body.admin-page .admin-bestiary-card textarea#beastAbilities{
+  grid-column:1/-1;
+  min-height:130px;
+}
+
+.bestiary-card .bestiary-abilities h3{
+  color:#ddb46d;
+  font-size:24px;
+  margin-bottom:12px;
+}
+
+.bestiary-card .bestiary-abilities ul{
+  padding-left:22px;
+  color:#d8c49a;
+  font-size:18px;
+  line-height:1.8;
+}
+
+.bestiary-card .bestiary-abilities li{
+  margin-bottom:8px;
+}
+
+.maps-grid .placeholder-panel{
+  grid-column:1/-1;
+}

@@ -191,6 +191,121 @@ if (locationsContainer) {
     });
 }
 
+
+const mapsContainer = document.querySelector("#mapsContainer");
+
+if (mapsContainer) {
+  db.collection("maps")
+    .get()
+    .then(snapshot => {
+      const maps = [];
+
+      snapshot.forEach(doc => {
+        maps.push(doc.data());
+      });
+
+      maps.sort((a, b) => Number(a.order || 0) - Number(b.order || 0));
+
+      if (!maps.length) {
+        mapsContainer.innerHTML = `
+          <section class="placeholder-panel">
+            <h2>Каталог карт</h2>
+            <p>Здесь появятся карты городов, подземелий, храмов, таверн и боевых сцен кампании.</p>
+          </section>
+        `;
+        return;
+      }
+
+      mapsContainer.innerHTML = maps.map(map => `
+        <article class="map-card" data-image="${map.image || ""}" data-title="${map.title || "Без названия"}">
+          ${map.image ? `<img src="${map.image}" alt="${map.title}">` : ""}
+          <div class="map-card-info">
+            <span>${map.category || "Карта"}</span>
+            <h2>${map.title || "Без названия"}</h2>
+            <p>${map.description || ""}</p>
+          </div>
+        </article>
+      `).join("");
+
+      const mapModal = document.querySelector("#mapModal");
+      const mapModalImage = document.querySelector("#mapModalImage");
+      const mapModalTitle = document.querySelector("#mapModalTitle");
+      const mapModalClose = document.querySelector("#mapModalClose");
+
+      if (mapModal && mapModalImage && mapModalTitle && mapModalClose) {
+        document.querySelectorAll(".map-card").forEach(card => {
+          card.addEventListener("click", () => {
+            if (!card.dataset.image) return;
+            mapModalImage.src = card.dataset.image;
+            mapModalTitle.textContent = card.dataset.title;
+            mapModal.classList.add("open");
+          });
+        });
+
+        mapModalClose.addEventListener("click", () => {
+          mapModal.classList.remove("open");
+        });
+
+        mapModal.addEventListener("click", event => {
+          if (event.target === mapModal) {
+            mapModal.classList.remove("open");
+          }
+        });
+      }
+    });
+}
+
+const bestiaryContainer = document.querySelector("#bestiaryContainer");
+
+if (bestiaryContainer) {
+  db.collection("bestiary")
+    .get()
+    .then(snapshot => {
+      const beasts = [];
+
+      snapshot.forEach(doc => {
+        beasts.push(doc.data());
+      });
+
+      beasts.sort((a, b) => Number(a.order || 0) - Number(b.order || 0));
+
+      if (!beasts.length) {
+        bestiaryContainer.innerHTML = `
+          <section class="placeholder-panel">
+            <h2>Каталог существ</h2>
+            <p>Здесь появятся карточки существ с иллюстрациями, характеристиками, способностями и связями с историей кампании.</p>
+          </section>
+        `;
+        return;
+      }
+
+      bestiaryContainer.innerHTML = beasts.map(beast => `
+        <article class="codex-card bestiary-card ${beast.image ? "" : "no-image"}">
+          ${beast.image ? `<img src="${beast.image}" alt="${beast.name}">` : ""}
+          <div class="codex-card-body">
+            <span>${beast.type || "Существо"}</span>
+            <h2>${beast.name || "Без названия"}</h2>
+            <p>${beast.summary || ""}</p>
+            <div class="codex-card-meta bestiary-meta">
+              <div><span>Опасность</span><strong>${beast.danger || "—"}</strong></div>
+              <div><span>КД</span><strong>${beast.ac || "—"}</strong></div>
+              <div><span>Хиты</span><strong>${beast.hp || "—"}</strong></div>
+            </div>
+            ${Array.isArray(beast.abilities) && beast.abilities.length ? `
+              <div class="codex-card-text bestiary-abilities">
+                <h3>Способности</h3>
+                <ul>${beast.abilities.map(item => `<li>${item}</li>`).join("")}</ul>
+              </div>
+            ` : ""}
+            <div class="codex-card-text">
+              ${paragraphsHtml(beast.lore)}
+            </div>
+          </div>
+        </article>
+      `).join("");
+    });
+}
+
 const charactersCodex = document.querySelector("#charactersCodex");
 
 if (charactersCodex) {
