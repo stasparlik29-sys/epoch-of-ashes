@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Импорт персонажей</title>
+</head>
+<body style="background:#080705;color:#ead7aa;font-family:Georgia,serif;padding:40px;">
+  <h1>Импорт персонажей в Firebase</h1>
+  <button id="importBtn" style="padding:14px 24px;font-size:18px;">Импортировать characters.json</button>
+  <pre id="log"></pre>
+
+  <script src="https://www.gstatic.com/firebasejs/12.15.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyADJg1m2L5AgemtSNr1u3ZHbsPQ6SLMvbI",
+      authDomain: "epoch-of-ashes.firebaseapp.com",
+      projectId: "epoch-of-ashes",
+      storageBucket: "epoch-of-ashes.firebasestorage.app",
+      messagingSenderId: "643542990904",
+      appId: "1:643542990904:web:1f2790f4dc58f4772c3467",
+      measurementId: "G-7LJVQXRZ44"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    const log = document.querySelector("#log");
+
+    document.querySelector("#importBtn").addEventListener("click", async () => {
+      log.textContent = "Загружаю characters.json...\n";
+
+      const response = await fetch("data/characters.json");
+      const characters = await response.json();
+
+      for (const character of characters) {
+        const id = character.name
+          .toLowerCase()
+          .replaceAll(" ", "-")
+          .replaceAll("ё", "е")
+          .replaceAll("ь", "")
+          .replaceAll("ъ", "");
+
+        await db.collection("characters").doc(id).set(character);
+
+        log.textContent += `Добавлен: ${character.name}\n`;
+      }
+
+      log.textContent += "\nГотово. Персонажи перенесены в Firestore.";
+    });
+  </script>
+</body>
+</html>
