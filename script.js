@@ -197,9 +197,16 @@ if (journalContainer) {
 const questsContainer = document.querySelector("#questsContainer");
 
 if (questsContainer) {
-  fetch("../data/quests.json")
-    .then(response => response.json())
-    .then(quests => {
+  db.collection("quests")
+    .get()
+    .then(snapshot => {
+      const quests = [];
+
+      snapshot.forEach(doc => {
+        quests.push(doc.data());
+      });
+
+      quests.sort((a, b) => Number(a.id) - Number(b.id));
       questsContainer.innerHTML = quests.map(quest => `
         <article class="quest-card ${quest.status}">
           <div class="quest-status">${getQuestStatus(quest.status)}</div>
