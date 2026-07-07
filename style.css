@@ -1089,3 +1089,135 @@ body.admin-page .admin-list-actions button:hover{
     justify-content:flex-start;
   }
 }
+
+
+/* ===========================
+   Города и локации
+=========================== */
+.codex-card-grid{
+  display:grid;
+  gap:24px;
+}
+
+.codex-card{
+  display:grid;
+  grid-template-columns:320px 1fr;
+  overflow:hidden;
+  border:1px solid #4b3418;
+  border-radius:18px;
+  background:linear-gradient(145deg,rgba(19,14,9,.95),rgba(7,6,5,.92));
+  box-shadow:0 0 35px rgba(0,0,0,.36);
+}
+
+.codex-card > img{
+  width:100%;
+  height:100%;
+  min-height:330px;
+  object-fit:cover;
+  border-right:1px solid #4b3418;
+}
+
+.codex-card-body{
+  padding:30px;
+}
+
+.codex-card-body > span{
+  color:#9c8156;
+  text-transform:uppercase;
+  letter-spacing:2px;
+  font-size:13px;
+}
+
+.codex-card-body h2{
+  color:#ddb46d;
+  font-size:38px;
+  margin:8px 0 12px;
+}
+
+.codex-card-body > p{
+  color:#d8c49a;
+  font-size:19px;
+  line-height:1.6;
+  margin-bottom:20px;
+}
+
+.codex-card-meta{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:12px;
+  margin:18px 0 22px;
+}
+
+.codex-card-meta div{
+  padding:14px;
+  border:1px solid #4b3418;
+  border-radius:12px;
+  background:rgba(10,8,6,.65);
+}
+
+.codex-card-meta span{
+  display:block;
+  color:#9c8156;
+  text-transform:uppercase;
+  letter-spacing:2px;
+  font-size:12px;
+  margin-bottom:6px;
+}
+
+.codex-card-meta strong{
+  color:#ffd37a;
+  font-size:17px;
+}
+
+.codex-card-text{
+  border-top:1px solid #4b3418;
+  padding-top:18px;
+}
+
+.codex-card-text p{
+  color:#d8c49a;
+  font-size:18px;
+  line-height:1.8;
+  margin-bottom:14px;
+}
+
+body.admin-page .admin-city-card textarea#cityDescription,
+body.admin-page .admin-location-card textarea#locationDescription{
+  min-height:180px;
+}
+
+body.admin-page #citySummary,
+body.admin-page #locationSummary,
+body.admin-page #cityDescription,
+body.admin-page #locationDescription,
+body.admin-page #cityImage,
+body.admin-page #locationImage{
+  grid-column:1/-1;
+}
+
+body.admin-page #cityMessage,
+body.admin-page #locationMessage{
+  color:#ffd37a;
+  margin-top:18px;
+  font-size:18px;
+  grid-column:1/-1;
+}
+
+@media(max-width:900px){
+  .codex-card{
+    grid-template-columns:1fr;
+  }
+
+  .codex-card > img{
+    height:260px;
+    min-height:0;
+    border-right:0;
+    border-bottom:1px solid #4b3418;
+  }
+
+  .codex-card-meta{
+    grid-template-columns:1fr;
+  }
+}
+
+.codex-card.no-image{grid-template-columns:1fr;}

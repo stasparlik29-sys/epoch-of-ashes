@@ -96,6 +96,101 @@ if (worldContainer) {
     });
 }
 
+
+function paragraphsHtml(value) {
+  const paragraphs = Array.isArray(value) ? value : [value || ""];
+  return paragraphs.filter(Boolean).map(paragraph => `<p>${paragraph}</p>`).join("");
+}
+
+const citiesContainer = document.querySelector("#citiesContainer");
+
+if (citiesContainer) {
+  db.collection("cities")
+    .get()
+    .then(snapshot => {
+      const cities = [];
+
+      snapshot.forEach(doc => {
+        cities.push(doc.data());
+      });
+
+      cities.sort((a, b) => Number(a.order || 0) - Number(b.order || 0));
+
+      if (!cities.length) {
+        citiesContainer.innerHTML = `
+          <section class="placeholder-panel">
+            <h2>Баарм</h2>
+            <p>Главный город вашей кампании. Здесь позже появятся районы, карта, население, важные NPC и история города.</p>
+          </section>
+        `;
+        return;
+      }
+
+      citiesContainer.innerHTML = cities.map(city => `
+        <article class="codex-card city-card ${city.image ? "" : "no-image"}">
+          ${city.image ? `<img src="${city.image}" alt="${city.name}">` : ""}
+          <div class="codex-card-body">
+            <span>${city.region || "Город"}</span>
+            <h2>${city.name || "Без названия"}</h2>
+            <p>${city.summary || ""}</p>
+            <div class="codex-card-meta">
+              <div><span>Статус</span><strong>${city.status || "—"}</strong></div>
+              <div><span>Население</span><strong>${city.population || "—"}</strong></div>
+              <div><span>Власть</span><strong>${city.ruler || "—"}</strong></div>
+            </div>
+            <div class="codex-card-text">
+              ${paragraphsHtml(city.description)}
+            </div>
+          </div>
+        </article>
+      `).join("");
+    });
+}
+
+const locationsContainer = document.querySelector("#locationsContainer");
+
+if (locationsContainer) {
+  db.collection("locations")
+    .get()
+    .then(snapshot => {
+      const locations = [];
+
+      snapshot.forEach(doc => {
+        locations.push(doc.data());
+      });
+
+      locations.sort((a, b) => Number(a.order || 0) - Number(b.order || 0));
+
+      if (!locations.length) {
+        locationsContainer.innerHTML = `
+          <section class="placeholder-panel">
+            <h2>Каталог локаций</h2>
+            <p>Здесь будут карточки всех значимых мест: Храм Пепла, таверна «Львиные когти», Башня Магов, Гильдия приключенцев и десятки других.</p>
+          </section>
+        `;
+        return;
+      }
+
+      locationsContainer.innerHTML = locations.map(location => `
+        <article class="codex-card location-card ${location.image ? "" : "no-image"}">
+          ${location.image ? `<img src="${location.image}" alt="${location.name}">` : ""}
+          <div class="codex-card-body">
+            <span>${location.type || "Локация"}</span>
+            <h2>${location.name || "Без названия"}</h2>
+            <p>${location.summary || ""}</p>
+            <div class="codex-card-meta">
+              <div><span>Регион</span><strong>${location.region || "—"}</strong></div>
+              <div><span>Статус</span><strong>${location.status || "—"}</strong></div>
+            </div>
+            <div class="codex-card-text">
+              ${paragraphsHtml(location.description)}
+            </div>
+          </div>
+        </article>
+      `).join("");
+    });
+}
+
 const charactersCodex = document.querySelector("#charactersCodex");
 
 if (charactersCodex) {
