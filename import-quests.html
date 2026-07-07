@@ -19,7 +19,7 @@
     document.querySelector("#importBtn").addEventListener("click", async () => {
       log.textContent = "Загружаю quests.json...\n";
 
-      const response = await fetch("data/quests.json");
+      const response = await fetch("data/quests.json?v=2");
       const quests = await response.json();
 
       for (const quest of quests) {
