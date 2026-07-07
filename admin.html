@@ -44,16 +44,18 @@
   </section>
 
   <section class="quest-card">
-    <h2 id="characterFormTitle">Редактирование персонажа</h2>
+    <h2 id="characterFormTitle">Персонажи</h2>
 
     <select id="characterSelect">
       <option value="">Выбрать персонажа</option>
     </select>
 
+    <h3>Основная информация</h3>
     <input id="characterName" placeholder="Имя">
     <input id="characterRace" placeholder="Раса">
     <input id="characterClass" placeholder="Класс">
     <input id="characterDomain" placeholder="Подкласс / домен / роль">
+    <input id="characterDomainLabel" placeholder="Название поля подкласса, например: Домен">
     <input id="characterGod" placeholder="Покровитель">
     <input id="characterStatus" placeholder="Статус">
     <input id="characterRole" placeholder="Роль">
@@ -62,9 +64,33 @@
     <textarea id="characterDescription" placeholder="Краткое описание"></textarea>
     <textarea id="characterBiography" placeholder="Полная биография"></textarea>
 
+    <h3>Характеристики</h3>
+    <div class="info-grid">
+      <div><span>Сила</span><input id="strValue" placeholder="10"><input id="strMod" placeholder="+0"></div>
+      <div><span>Ловкость</span><input id="dexValue" placeholder="10"><input id="dexMod" placeholder="+0"></div>
+      <div><span>Телосложение</span><input id="conValue" placeholder="10"><input id="conMod" placeholder="+0"></div>
+      <div><span>Интеллект</span><input id="intValue" placeholder="10"><input id="intMod" placeholder="+0"></div>
+      <div><span>Мудрость</span><input id="wisValue" placeholder="10"><input id="wisMod" placeholder="+0"></div>
+      <div><span>Харизма</span><input id="chaValue" placeholder="10"><input id="chaMod" placeholder="+0"></div>
+    </div>
+
+    <h3>Боевые данные</h3>
+    <div class="info-grid">
+      <div><span>Уровень</span><input id="combatLevel" placeholder="1"></div>
+      <div><span>КД</span><input id="combatAc" placeholder="10"></div>
+      <div><span>Хиты</span><input id="combatHp" placeholder="10"></div>
+      <div><span>Скорость</span><input id="combatSpeed" placeholder="30 фт."></div>
+      <div><span>Владение</span><input id="combatProficiency" placeholder="+2"></div>
+      <div><span>Инициатива</span><input id="combatInitiative" placeholder="+0"></div>
+    </div>
+
+    <h3>Личность</h3>
+    <textarea id="characterPersonality" placeholder="Черты характера"></textarea>
+    <textarea id="characterIdeals" placeholder="Идеалы"></textarea>
+
     <button id="newCharacterBtn" class="main-button" type="button">Новый персонаж</button>
-<button id="saveCharacterBtn" class="main-button">Сохранить персонажа</button>
-<button id="deleteCharacterBtn" class="main-button" type="button">Удалить персонажа</button>
+    <button id="saveCharacterBtn" class="main-button">Сохранить персонажа</button>
+    <button id="deleteCharacterBtn" class="main-button" type="button">Удалить персонажа</button>
 
     <p id="characterMessage"></p>
   </section>
@@ -97,16 +123,37 @@
   const characterRace = document.querySelector("#characterRace");
   const characterClass = document.querySelector("#characterClass");
   const characterDomain = document.querySelector("#characterDomain");
+  const characterDomainLabel = document.querySelector("#characterDomainLabel");
   const characterGod = document.querySelector("#characterGod");
   const characterStatus = document.querySelector("#characterStatus");
   const characterRole = document.querySelector("#characterRole");
   const characterImage = document.querySelector("#characterImage");
   const characterDescription = document.querySelector("#characterDescription");
   const characterBiography = document.querySelector("#characterBiography");
+  const characterPersonality = document.querySelector("#characterPersonality");
+  const characterIdeals = document.querySelector("#characterIdeals");
   const characterMessage = document.querySelector("#characterMessage");
   const saveCharacterBtn = document.querySelector("#saveCharacterBtn");
   const newCharacterBtn = document.querySelector("#newCharacterBtn");
-const deleteCharacterBtn = document.querySelector("#deleteCharacterBtn");
+  const deleteCharacterBtn = document.querySelector("#deleteCharacterBtn");
+
+  const abilityInputs = {
+    str: { value: document.querySelector("#strValue"), mod: document.querySelector("#strMod") },
+    dex: { value: document.querySelector("#dexValue"), mod: document.querySelector("#dexMod") },
+    con: { value: document.querySelector("#conValue"), mod: document.querySelector("#conMod") },
+    int: { value: document.querySelector("#intValue"), mod: document.querySelector("#intMod") },
+    wis: { value: document.querySelector("#wisValue"), mod: document.querySelector("#wisMod") },
+    cha: { value: document.querySelector("#chaValue"), mod: document.querySelector("#chaMod") }
+  };
+
+  const combatInputs = {
+    level: document.querySelector("#combatLevel"),
+    ac: document.querySelector("#combatAc"),
+    hp: document.querySelector("#combatHp"),
+    speed: document.querySelector("#combatSpeed"),
+    proficiency: document.querySelector("#combatProficiency"),
+    initiative: document.querySelector("#combatInitiative")
+  };
 
   function clearForm() {
     editingQuestId = null;
@@ -203,35 +250,76 @@ const deleteCharacterBtn = document.querySelector("#deleteCharacterBtn");
 
   async function loadCharacters() {
     const snapshot = await db.collection("characters").get();
-
     characterSelect.innerHTML = `<option value="">Выбрать персонажа</option>`;
 
     snapshot.forEach(doc => {
       const character = doc.data();
-      characterSelect.innerHTML += `
-        <option value="${doc.id}">${character.name}</option>
-      `;
+      characterSelect.innerHTML += `<option value="${doc.id}">${character.name}</option>`;
     });
   }
-function clearCharacterForm() {
-  editingCharacterId = null;
-  currentCharacterData = null;
 
-  characterSelect.value = "";
+  function setAbilities(abilities = {}) {
+    Object.keys(abilityInputs).forEach(key => {
+      abilityInputs[key].value.value = abilities[key]?.value || "10";
+      abilityInputs[key].mod.value = abilities[key]?.mod || "+0";
+    });
+  }
 
-  characterName.value = "";
-  characterRace.value = "";
-  characterClass.value = "";
-  characterDomain.value = "";
-  characterGod.value = "";
-  characterStatus.value = "";
-  characterRole.value = "";
-  characterImage.value = "";
-  characterDescription.value = "";
-  characterBiography.value = "";
+  function getAbilities() {
+    return {
+      str: { value: abilityInputs.str.value.value.trim(), mod: abilityInputs.str.mod.value.trim() },
+      dex: { value: abilityInputs.dex.value.value.trim(), mod: abilityInputs.dex.mod.value.trim() },
+      con: { value: abilityInputs.con.value.value.trim(), mod: abilityInputs.con.mod.value.trim() },
+      int: { value: abilityInputs.int.value.value.trim(), mod: abilityInputs.int.mod.value.trim() },
+      wis: { value: abilityInputs.wis.value.value.trim(), mod: abilityInputs.wis.mod.value.trim() },
+      cha: { value: abilityInputs.cha.value.value.trim(), mod: abilityInputs.cha.mod.value.trim() }
+    };
+  }
 
-  characterMessage.textContent = "Создание нового персонажа.";
-}
+  function setCombat(combat = {}) {
+    combatInputs.level.value = combat.level || "1";
+    combatInputs.ac.value = combat.ac || "10";
+    combatInputs.hp.value = combat.hp || "10";
+    combatInputs.speed.value = combat.speed || "30 фт.";
+    combatInputs.proficiency.value = combat.proficiency || "+2";
+    combatInputs.initiative.value = combat.initiative || "+0";
+  }
+
+  function getCombat() {
+    return {
+      level: combatInputs.level.value.trim(),
+      ac: combatInputs.ac.value.trim(),
+      hp: combatInputs.hp.value.trim(),
+      speed: combatInputs.speed.value.trim(),
+      proficiency: combatInputs.proficiency.value.trim(),
+      initiative: combatInputs.initiative.value.trim()
+    };
+  }
+
+  function clearCharacterForm() {
+    editingCharacterId = null;
+    currentCharacterData = null;
+
+    characterSelect.value = "";
+    characterName.value = "";
+    characterRace.value = "";
+    characterClass.value = "";
+    characterDomain.value = "";
+    characterDomainLabel.value = "Особенность";
+    characterGod.value = "";
+    characterStatus.value = "";
+    characterRole.value = "";
+    characterImage.value = "";
+    characterDescription.value = "";
+    characterBiography.value = "";
+    characterPersonality.value = "";
+    characterIdeals.value = "";
+    setAbilities();
+    setCombat();
+
+    characterMessage.textContent = "Создание нового персонажа.";
+  }
+
   characterSelect.addEventListener("change", async () => {
     const docId = characterSelect.value;
     if (!docId) return;
@@ -246,80 +334,70 @@ function clearCharacterForm() {
     characterRace.value = character.race || "";
     characterClass.value = character.class || "";
     characterDomain.value = character.domain || "";
+    characterDomainLabel.value = character.domainLabel || "Особенность";
     characterGod.value = character.god || "";
     characterStatus.value = character.status || "";
     characterRole.value = character.role || "";
     characterImage.value = character.image || "";
     characterDescription.value = character.description || "";
     characterBiography.value = character.biography || "";
+    characterPersonality.value = character.personality || "";
+    characterIdeals.value = character.ideals || "";
+    setAbilities(character.abilities);
+    setCombat(character.combat);
   });
 
   saveCharacterBtn.addEventListener("click", async () => {
-  const characterId = editingCharacterId || `character-${Date.now()}`;
+    const characterId = editingCharacterId || `character-${Date.now()}`;
 
-  const updatedCharacter = {
-    ...(currentCharacterData || {}),
-    name: characterName.value.trim(),
-    race: characterRace.value.trim(),
-    class: characterClass.value.trim(),
-    domain: characterDomain.value.trim(),
-    domainLabel: "Особенность",
-    god: characterGod.value.trim(),
-    status: characterStatus.value.trim(),
-    role: characterRole.value.trim(),
-    image: characterImage.value.trim(),
-    description: characterDescription.value.trim(),
-    biography: characterBiography.value.trim(),
+    const updatedCharacter = {
+      ...(currentCharacterData || {}),
+      name: characterName.value.trim(),
+      race: characterRace.value.trim(),
+      class: characterClass.value.trim(),
+      domain: characterDomain.value.trim(),
+      domainLabel: characterDomainLabel.value.trim() || "Особенность",
+      god: characterGod.value.trim(),
+      status: characterStatus.value.trim(),
+      role: characterRole.value.trim(),
+      image: characterImage.value.trim(),
+      description: characterDescription.value.trim(),
+      biography: characterBiography.value.trim(),
+      personality: characterPersonality.value.trim(),
+      ideals: characterIdeals.value.trim(),
+      abilities: getAbilities(),
+      combat: getCombat(),
+      companion: currentCharacterData?.companion || null
+    };
 
-    abilities: currentCharacterData?.abilities || {
-      str: { value: "10", mod: "+0" },
-      dex: { value: "10", mod: "+0" },
-      con: { value: "10", mod: "+0" },
-      int: { value: "10", mod: "+0" },
-      wis: { value: "10", mod: "+0" },
-      cha: { value: "10", mod: "+0" }
-    },
+    await db.collection("characters").doc(characterId).set(updatedCharacter);
 
-    combat: currentCharacterData?.combat || {
-      level: "1",
-      ac: "10",
-      hp: "10",
-      speed: "30 фт.",
-      proficiency: "+2",
-      initiative: "+0"
-    },
+    characterMessage.textContent = editingCharacterId ? "Персонаж обновлён." : "Персонаж создан.";
+    editingCharacterId = characterId;
+    currentCharacterData = updatedCharacter;
 
-    personality: currentCharacterData?.personality || "",
-    ideals: currentCharacterData?.ideals || "",
-    companion: currentCharacterData?.companion || null
-  };
+    await loadCharacters();
+    characterSelect.value = characterId;
+  });
 
-  await db.collection("characters").doc(characterId).set(updatedCharacter);
+  newCharacterBtn.addEventListener("click", clearCharacterForm);
 
-  characterMessage.textContent = editingCharacterId ? "Персонаж обновлён." : "Персонаж создан.";
+  deleteCharacterBtn.addEventListener("click", async () => {
+    if (!editingCharacterId) {
+      characterMessage.textContent = "Сначала выбери персонажа.";
+      return;
+    }
 
-  editingCharacterId = characterId;
-  currentCharacterData = updatedCharacter;
+    if (!confirm("Удалить этого персонажа?")) return;
 
-  await loadCharacters();
-characterSelect.value = characterId;
-});
-newCharacterBtn.addEventListener("click", clearCharacterForm);
+    await db.collection("characters").doc(editingCharacterId).delete();
 
-deleteCharacterBtn.addEventListener("click", async () => {
-  if (!editingCharacterId) {
-    characterMessage.textContent = "Сначала выбери персонажа.";
-    return;
-  }
+    characterMessage.textContent = "Персонаж удалён.";
+    clearCharacterForm();
+    await loadCharacters();
+    characterSelect.value = "";
+  });
 
-  if (!confirm("Удалить этого персонажа?")) return;
-
-  await db.collection("characters").doc(editingCharacterId).delete();
-
-  characterMessage.textContent = "Персонаж удалён.";
-  clearCharacterForm();
-  loadCharacters();
-});
   loadQuests();
   loadCharacters();
 </script>
