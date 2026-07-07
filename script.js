@@ -44,6 +44,58 @@ if (homeHeroTitle) {
   });
 }
 
+
+const worldContainer = document.querySelector("#worldContainer");
+
+if (worldContainer) {
+  db.collection("world")
+    .get()
+    .then(snapshot => {
+      const entries = [];
+
+      snapshot.forEach(doc => {
+        entries.push(doc.data());
+      });
+
+      entries.sort((a, b) => Number(a.order || 0) - Number(b.order || 0));
+
+      if (!entries.length) {
+        worldContainer.innerHTML = `
+          <section class="placeholder-panel">
+            <h2>Эпоха Пепла</h2>
+            <p>Здесь позже появится основная история мира, хронология, пантеон и ключевые события кампании.</p>
+          </section>
+        `;
+        return;
+      }
+
+      worldContainer.innerHTML = entries.map((entry, index) => `
+        <article class="world-entry ${index === 0 ? "open" : ""}">
+          <button class="world-header">
+            <div>
+              <span>Глава ${entry.order || index + 1}</span>
+              <h2>${entry.title}</h2>
+              <p>${entry.subtitle || ""}</p>
+            </div>
+            <strong class="world-arrow">▼</strong>
+          </button>
+          <div class="world-content">
+            ${(Array.isArray(entry.content) ? entry.content : [entry.content || ""])
+              .filter(Boolean)
+              .map(paragraph => `<p>${paragraph}</p>`)
+              .join("")}
+          </div>
+        </article>
+      `).join("");
+
+      document.querySelectorAll(".world-header").forEach(header => {
+        header.addEventListener("click", () => {
+          header.parentElement.classList.toggle("open");
+        });
+      });
+    });
+}
+
 const charactersCodex = document.querySelector("#charactersCodex");
 
 if (charactersCodex) {

@@ -10,6 +10,7 @@
 <main class="page-screen">
   <nav class="top-nav">
     <a href="index.html">Главная</a>
+    <a href="pages/world.html">Мир</a>
     <a href="pages/quests.html">Квесты</a>
     <a href="pages/characters.html">Персонажи</a>
     <a href="pages/journal.html">Журнал</a>
@@ -40,6 +41,26 @@
     <button id="resetHomeBtn" class="main-button" type="button">Вернуть текущие тексты</button>
 
     <p id="homeMessage"></p>
+  </section>
+
+  <section class="quest-card admin-world-card">
+    <h2 id="worldFormTitle">Новая глава мира</h2>
+    <p class="admin-section-note">Раздел для истории мира, пантеона, эпох, империй и важных событий.</p>
+
+    <input id="worldOrder" placeholder="Порядок отображения, например 1">
+    <input id="worldTitle" placeholder="Название главы">
+    <input id="worldSubtitle" placeholder="Подзаголовок / краткая пометка">
+    <textarea id="worldContent" placeholder="Полный текст главы. Каждый абзац с новой строки."></textarea>
+
+    <button id="saveWorldBtn" class="main-button">Сохранить главу мира</button>
+    <button id="clearWorldBtn" class="main-button" type="button">Очистить форму</button>
+
+    <p id="worldMessage"></p>
+  </section>
+
+  <section class="quest-card">
+    <h2>Главы мира</h2>
+    <div id="worldAdminList"></div>
   </section>
 
   <section class="quest-card">
@@ -148,6 +169,7 @@
 
 <script>
   let editingQuestId = null;
+  let editingWorldId = null;
   let editingJournalId = null;
   let editingCharacterId = null;
   let currentCharacterData = null;
@@ -163,6 +185,17 @@
   const saveHomeBtn = document.querySelector("#saveHomeBtn");
   const resetHomeBtn = document.querySelector("#resetHomeBtn");
   const homeMessage = document.querySelector("#homeMessage");
+
+
+  const worldFormTitle = document.querySelector("#worldFormTitle");
+  const worldOrder = document.querySelector("#worldOrder");
+  const worldTitle = document.querySelector("#worldTitle");
+  const worldSubtitle = document.querySelector("#worldSubtitle");
+  const worldContent = document.querySelector("#worldContent");
+  const saveWorldBtn = document.querySelector("#saveWorldBtn");
+  const clearWorldBtn = document.querySelector("#clearWorldBtn");
+  const worldMessage = document.querySelector("#worldMessage");
+  const worldAdminList = document.querySelector("#worldAdminList");
 
   const formTitle = document.querySelector("#formTitle");
   const saveQuestBtn = document.querySelector("#saveQuestBtn");
@@ -289,6 +322,101 @@
     fillHomeForm(defaultHomeSettings);
     homeMessage.textContent = "Вернул текущие тексты. Нажми «Сохранить главную», чтобы записать их в Firebase.";
   });
+
+  function clearWorldForm() {
+    editingWorldId = null;
+    worldFormTitle.textContent = "Новая глава мира";
+    worldOrder.value = "";
+    worldTitle.value = "";
+    worldSubtitle.value = "";
+    worldContent.value = "";
+    worldMessage.textContent = "";
+  }
+
+  function normalizeWorldContent(text) {
+    return text
+      .split(/\n+/)
+      .map(paragraph => paragraph.trim())
+      .filter(Boolean);
+  }
+
+  function worldContentToText(content) {
+    if (Array.isArray(content)) return content.join("\n");
+    return content || "";
+  }
+
+  async function loadWorldEntries() {
+    const snapshot = await db.collection("world").get();
+    const entries = [];
+
+    snapshot.forEach(doc => {
+      entries.push({ docId: doc.id, ...doc.data() });
+    });
+
+    entries.sort((a, b) => Number(a.order || 0) - Number(b.order || 0));
+
+    worldAdminList.innerHTML = entries.map(entry => `
+      <div class="admin-list-item">
+        <div>
+          <span>Порядок ${entry.order || "—"}</span>
+          <strong>${entry.title || "Без названия"}</strong>
+          <p>${entry.subtitle || ""}</p>
+        </div>
+        <div class="admin-list-actions">
+          <button class="editWorldBtn" data-id="${entry.docId}">✏️ Редактировать</button>
+          <button class="deleteWorldBtn" data-id="${entry.docId}">🗑️ Удалить</button>
+        </div>
+      </div>
+    `).join("");
+
+    document.querySelectorAll(".editWorldBtn").forEach(button => {
+      button.addEventListener("click", async () => {
+        const docId = button.dataset.id;
+        const doc = await db.collection("world").doc(docId).get();
+        const entry = doc.data();
+
+        editingWorldId = docId;
+        worldFormTitle.textContent = "Редактирование главы мира";
+        worldOrder.value = entry.order || "";
+        worldTitle.value = entry.title || "";
+        worldSubtitle.value = entry.subtitle || "";
+        worldContent.value = worldContentToText(entry.content);
+
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+    });
+
+    document.querySelectorAll(".deleteWorldBtn").forEach(button => {
+      button.addEventListener("click", async () => {
+        if (!confirm("Удалить эту главу мира?")) return;
+
+        await db.collection("world").doc(button.dataset.id).delete();
+        worldMessage.textContent = "Глава мира удалена.";
+        clearWorldForm();
+        loadWorldEntries();
+      });
+    });
+  }
+
+  saveWorldBtn.addEventListener("click", async () => {
+    const entryId = editingWorldId || `world-${Date.now()}`;
+
+    const entry = {
+      order: Number(worldOrder.value.trim()) || 0,
+      title: worldTitle.value.trim(),
+      subtitle: worldSubtitle.value.trim(),
+      content: normalizeWorldContent(worldContent.value)
+    };
+
+    await db.collection("world").doc(entryId).set(entry);
+
+    worldMessage.textContent = editingWorldId ? "Глава мира обновлена." : "Глава мира создана.";
+    editingWorldId = entryId;
+    await loadWorldEntries();
+  });
+
+  clearWorldBtn.addEventListener("click", clearWorldForm);
+
 
   function clearForm() {
     editingQuestId = null;
@@ -634,6 +762,7 @@
   });
 
   loadHomeSettings();
+  loadWorldEntries();
   loadQuests();
   loadJournalEntries();
   loadCharacters();
