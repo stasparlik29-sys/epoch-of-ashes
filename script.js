@@ -1,0 +1,818 @@
+const homeHero = document.querySelector("#homeHero");
+const homeHeroTitle = document.querySelector("#homeHeroTitle");
+const homeHeroSubtitle = document.querySelector("#homeHeroSubtitle");
+const homeHeroButton = document.querySelector("#homeHeroButton");
+const homeSessionList = document.querySelector("#homeSessionList");
+const homeFeaturedName = document.querySelector("#homeFeaturedName");
+const homeFeaturedSubtitle = document.querySelector("#homeFeaturedSubtitle");
+const homeFeaturedImage = document.querySelector("#homeFeaturedImage");
+
+function highlightFirstWords(text) {
+  const parts = text.split(" ");
+  if (parts.length < 2) return text;
+
+  const first = parts.slice(0, 2).join(" ");
+  const rest = parts.slice(2).join(" ");
+
+  return `<strong>${first}</strong>${rest ? " " + rest : ""}`;
+}
+
+if (homeHeroTitle) {
+  db.collection("site").doc("home").get().then(doc => {
+    if (!doc.exists) return;
+
+    const settings = doc.data();
+
+    if (settings.heroTitle) homeHeroTitle.textContent = settings.heroTitle;
+    if (settings.heroSubtitle) homeHeroSubtitle.textContent = settings.heroSubtitle;
+
+    if (homeHero && settings.heroBackground) {
+      const heroBackgroundUrl = settings.heroBackground;
+      const preloadHeroImage = new Image();
+
+      preloadHeroImage.onload = () => {
+        homeHero.style.backgroundImage = `linear-gradient(to right, rgba(7,6,5,.2), rgba(7,6,5,.82)), linear-gradient(to bottom, rgba(7,6,5,.05), #070605), url("${heroBackgroundUrl}")`;
+        localStorage.setItem("epochHeroBackground", heroBackgroundUrl);
+      };
+
+      preloadHeroImage.src = heroBackgroundUrl;
+    }
+
+    if (settings.buttonText) homeHeroButton.textContent = settings.buttonText;
+    if (settings.buttonLink) homeHeroButton.href = settings.buttonLink;
+
+    if (Array.isArray(settings.sessionBullets) && settings.sessionBullets.length) {
+      homeSessionList.innerHTML = settings.sessionBullets
+        .map(item => `<li>${highlightFirstWords(item)}</li>`)
+        .join("");
+    }
+
+    if (settings.featuredName) {
+      homeFeaturedName.textContent = settings.featuredName;
+      homeFeaturedImage.alt = settings.featuredName;
+    }
+
+    if (settings.featuredSubtitle) homeFeaturedSubtitle.textContent = settings.featuredSubtitle;
+    if (settings.featuredImage) homeFeaturedImage.src = settings.featuredImage;
+  });
+
+}
+
+const globalSearchInput = document.querySelector("#globalSearchInput");
+const globalSearchResults = document.querySelector("#globalSearchResults");
+let globalSearchItems = [];
+
+function normalizeSearchText(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/ё/g, "е")
+    .trim();
+}
+
+function makeSearchItem(section, icon, title, subtitle, text, url) {
+  return {
+    section,
+    icon,
+    title: title || "Без названия",
+    subtitle: subtitle || "",
+    text: normalizeSearchText(`${title || ""} ${subtitle || ""} ${text || ""}`),
+    url
+  };
+}
+
+async function loadGlobalSearchIndex() {
+  if (!globalSearchInput || !globalSearchResults || typeof db === "undefined") return;
+
+  const configs = [
+    { collection: "world", section: "Мир", icon: "📖", url: "pages/world.html", title: item => item.title, subtitle: item => item.subtitle, text: item => item.content },
+    { collection: "cities", section: "Города", icon: "🏰", url: "pages/cities.html", title: item => item.name, subtitle: item => item.region || item.status, text: item => `${item.summary || ""} ${Array.isArray(item.description) ? item.description.join(" ") : item.description || ""}` },
+    { collection: "locations", section: "Локации", icon: "📍", url: "pages/locations.html", title: item => item.name, subtitle: item => item.type || item.region, text: item => `${item.summary || ""} ${Array.isArray(item.description) ? item.description.join(" ") : item.description || ""}` },
+    { collection: "maps", section: "Карты", icon: "🗺️", url: "pages/maps.html", title: item => item.title, subtitle: item => item.category, text: item => item.description },
+    { collection: "bestiary", section: "Бестиарий", icon: "👹", url: "pages/bestiary.html", title: item => item.name, subtitle: item => item.type || item.danger, text: item => `${item.summary || ""} ${Array.isArray(item.abilities) ? item.abilities.join(" ") : ""} ${Array.isArray(item.lore) ? item.lore.join(" ") : item.lore || ""}` },
+    { collection: "quests", section: "Квесты", icon: "📜", url: "pages/quests.html", title: item => item.title, subtitle: item => item.giver || item.status, text: item => `${item.description || ""} ${item.reward || ""} ${item.difficulty || ""}` },
+    { collection: "characters", section: "Персонажи", icon: "👤", url: "pages/characters.html", title: item => item.name, subtitle: item => item.class || item.role, text: item => `${item.race || ""} ${item.domain || ""} ${item.god || ""} ${item.status || ""} ${item.description || ""} ${item.biography || ""}` },
+    { collection: "journal", section: "Журнал", icon: "🕯️", url: "pages/journal.html", title: item => item.title, subtitle: item => item.date || (item.id ? `Сессия ${item.id}` : ""), text: item => `${item.summary || ""} ${Array.isArray(item.content) ? item.content.join(" ") : item.content || ""}` }
+  ];
+
+  const all = [];
+
+  await Promise.all(configs.map(async config => {
+    try {
+      const snapshot = await db.collection(config.collection).get();
+      snapshot.forEach(doc => {
+        const item = doc.data();
+        all.push(makeSearchItem(
+          config.section,
+          config.icon,
+          config.title(item),
+          config.subtitle(item),
+          config.text(item),
+          `${config.url}?search=${encodeURIComponent(config.title(item) || "")}`
+        ));
+      });
+    } catch (error) {
+      console.warn(`Не удалось загрузить раздел ${config.collection} для поиска:`, error);
+    }
+  }));
+
+  globalSearchItems = all;
+}
+
+function renderGlobalSearchResults(query) {
+  if (!globalSearchResults) return;
+
+  const value = normalizeSearchText(query);
+  if (value.length < 2) {
+    globalSearchResults.innerHTML = "";
+    globalSearchResults.classList.remove("open");
+    return;
+  }
+
+  const results = globalSearchItems
+    .filter(item => item.text.includes(value) || normalizeSearchText(item.title).includes(value))
+    .slice(0, 12);
+
+  if (!results.length) {
+    globalSearchResults.innerHTML = `<div class="global-search-empty">Ничего не найдено.</div>`;
+    globalSearchResults.classList.add("open");
+    return;
+  }
+
+  globalSearchResults.innerHTML = results.map(item => `
+    <a class="global-search-result" href="${item.url}">
+      <span class="global-search-icon">${item.icon}</span>
+      <span>
+        <strong>${item.title}</strong>
+        <em>${item.section}${item.subtitle ? " · " + item.subtitle : ""}</em>
+      </span>
+    </a>
+  `).join("");
+  globalSearchResults.classList.add("open");
+}
+
+if (globalSearchInput && globalSearchResults) {
+  loadGlobalSearchIndex();
+  globalSearchInput.addEventListener("input", () => renderGlobalSearchResults(globalSearchInput.value));
+
+  document.addEventListener("click", event => {
+    if (!event.target.closest(".global-search-box")) {
+      globalSearchResults.classList.remove("open");
+    }
+  });
+}
+
+
+const worldContainer = document.querySelector("#worldContainer");
+
+if (worldContainer) {
+  db.collection("world")
+    .get()
+    .then(snapshot => {
+      const entries = [];
+
+      snapshot.forEach(doc => {
+        entries.push(doc.data());
+      });
+
+      entries.sort((a, b) => Number(a.order || 0) - Number(b.order || 0));
+
+      if (!entries.length) {
+        worldContainer.innerHTML = `
+          <section class="placeholder-panel">
+            <h2>Эпоха Пепла</h2>
+            <p>Здесь позже появится основная история мира, хронология, пантеон и ключевые события кампании.</p>
+          </section>
+        `;
+        return;
+      }
+
+      worldContainer.innerHTML = entries.map((entry, index) => `
+        <article class="world-entry ${index === 0 ? "open" : ""}">
+          <button class="world-header">
+            <div>
+              <span>Глава ${entry.order || index + 1}</span>
+              <h2>${entry.title}</h2>
+              <p>${entry.subtitle || ""}</p>
+            </div>
+            <strong class="world-arrow">▼</strong>
+          </button>
+          <div class="world-content">
+            ${(Array.isArray(entry.content) ? entry.content : [entry.content || ""])
+              .filter(Boolean)
+              .map(paragraph => `<p>${paragraph}</p>`)
+              .join("")}
+          </div>
+        </article>
+      `).join("");
+
+      document.querySelectorAll(".world-header").forEach(header => {
+        header.addEventListener("click", () => {
+          header.parentElement.classList.toggle("open");
+        });
+      });
+    });
+}
+
+
+function paragraphsHtml(value) {
+  const paragraphs = Array.isArray(value) ? value : [value || ""];
+  return paragraphs.filter(Boolean).map(paragraph => `<p>${paragraph}</p>`).join("");
+}
+
+const citiesContainer = document.querySelector("#citiesContainer");
+
+if (citiesContainer) {
+  db.collection("cities")
+    .get()
+    .then(snapshot => {
+      const cities = [];
+
+      snapshot.forEach(doc => {
+        cities.push({ docId: doc.id, ...doc.data() });
+      });
+
+      cities.sort((a, b) => Number(a.order || 0) - Number(b.order || 0));
+
+      if (!cities.length) {
+        citiesContainer.innerHTML = `
+          <section class="placeholder-panel">
+            <h2>Баарм</h2>
+            <p>Главный город вашей кампании. Здесь позже появятся районы, карта, население, важные NPC и история города.</p>
+          </section>
+        `;
+        return;
+      }
+
+      let selectedCityIndex = 0;
+
+      function renderCity(index) {
+        const city = cities[index];
+
+        citiesContainer.innerHTML = `
+          <section class="city-codex-layout">
+            <aside class="city-codex-list">
+              <h2>Список городов</h2>
+              <input id="citySearchInput" class="city-search-input" placeholder="Поиск города..." autocomplete="off">
+              <div id="cityListItems" class="city-list-items">
+                ${cities.map((item, itemIndex) => `
+                  <button class="city-list-item ${itemIndex === index ? "active" : ""}" data-index="${itemIndex}">
+                    <strong>${item.name || "Без названия"}</strong>
+                    <span>${item.region || item.status || "Город"}</span>
+                  </button>
+                `).join("")}
+              </div>
+            </aside>
+
+            <article class="city-codex-profile">
+              ${city.image ? `
+                <div class="city-banner">
+                  <img src="${city.image}" alt="${city.name || "Город"}">
+                </div>
+              ` : `
+                <div class="city-banner city-banner-empty">
+                  <span>Изображение города не добавлено</span>
+                </div>
+              `}
+
+              <div class="city-profile-body">
+                <p class="codex-label">${city.region || "Город"}</p>
+                <h2>${city.name || "Без названия"}</h2>
+                <p class="city-summary">${city.summary || ""}</p>
+
+                <div class="city-stats-grid">
+                  <div><span>Статус</span><strong>${city.status || "—"}</strong></div>
+                  <div><span>Население</span><strong>${city.population || "—"}</strong></div>
+                  <div><span>Власть</span><strong>${city.ruler || "—"}</strong></div>
+                </div>
+
+                <section class="city-text-panel">
+                  <h3>Описание</h3>
+                  ${paragraphsHtml(city.description)}
+                </section>
+              </div>
+            </article>
+          </section>
+        `;
+
+        const listItems = document.querySelectorAll(".city-list-item");
+        const searchInput = document.querySelector("#citySearchInput");
+
+        listItems.forEach(button => {
+          button.addEventListener("click", () => {
+            selectedCityIndex = Number(button.dataset.index);
+            renderCity(selectedCityIndex);
+          });
+        });
+
+        if (searchInput) {
+          searchInput.addEventListener("input", () => {
+            const query = searchInput.value.trim().toLowerCase();
+
+            document.querySelectorAll(".city-list-item").forEach(button => {
+              const city = cities[Number(button.dataset.index)];
+              const searchText = `${city.name || ""} ${city.region || ""} ${city.status || ""}`.toLowerCase();
+              button.style.display = searchText.includes(query) ? "block" : "none";
+            });
+          });
+        }
+      }
+
+      renderCity(selectedCityIndex);
+    });
+}
+
+const locationsContainer = document.querySelector("#locationsContainer");
+
+if (locationsContainer) {
+  db.collection("locations")
+    .get()
+    .then(snapshot => {
+      const locations = [];
+
+      snapshot.forEach(doc => {
+        locations.push(doc.data());
+      });
+
+      locations.sort((a, b) => Number(a.order || 0) - Number(b.order || 0));
+
+      if (!locations.length) {
+        locationsContainer.innerHTML = `
+          <section class="placeholder-panel">
+            <h2>Каталог локаций</h2>
+            <p>Здесь будут карточки всех значимых мест: Храм Пепла, таверна «Львиные когти», Башня Магов, Гильдия приключенцев и десятки других.</p>
+          </section>
+        `;
+        return;
+      }
+
+      locationsContainer.innerHTML = locations.map(location => `
+        <article class="codex-card location-card ${location.image ? "" : "no-image"}">
+          ${location.image ? `<img src="${location.image}" alt="${location.name}">` : ""}
+          <div class="codex-card-body">
+            <span>${location.type || "Локация"}</span>
+            <h2>${location.name || "Без названия"}</h2>
+            <p>${location.summary || ""}</p>
+            <div class="codex-card-meta">
+              <div><span>Регион</span><strong>${location.region || "—"}</strong></div>
+              <div><span>Статус</span><strong>${location.status || "—"}</strong></div>
+            </div>
+            <div class="codex-card-text">
+              ${paragraphsHtml(location.description)}
+            </div>
+          </div>
+        </article>
+      `).join("");
+    });
+}
+
+
+const mapsContainer = document.querySelector("#mapsContainer");
+
+if (mapsContainer) {
+  db.collection("maps")
+    .get()
+    .then(snapshot => {
+      const maps = [];
+
+      snapshot.forEach(doc => {
+        maps.push(doc.data());
+      });
+
+      maps.sort((a, b) => Number(a.order || 0) - Number(b.order || 0));
+
+      if (!maps.length) {
+        mapsContainer.innerHTML = `
+          <section class="placeholder-panel">
+            <h2>Каталог карт</h2>
+            <p>Здесь появятся карты городов, подземелий, храмов, таверн и боевых сцен кампании.</p>
+          </section>
+        `;
+        return;
+      }
+
+      mapsContainer.innerHTML = maps.map(map => `
+        <article class="map-card" data-image="${map.image || ""}" data-title="${map.title || "Без названия"}">
+          ${map.image ? `<img src="${map.image}" alt="${map.title}">` : ""}
+          <div class="map-card-info">
+            <span>${map.category || "Карта"}</span>
+            <h2>${map.title || "Без названия"}</h2>
+            <p>${map.description || ""}</p>
+          </div>
+        </article>
+      `).join("");
+
+      const mapModal = document.querySelector("#mapModal");
+      const mapModalImage = document.querySelector("#mapModalImage");
+      const mapModalTitle = document.querySelector("#mapModalTitle");
+      const mapModalClose = document.querySelector("#mapModalClose");
+
+      if (mapModal && mapModalImage && mapModalTitle && mapModalClose) {
+        document.querySelectorAll(".map-card").forEach(card => {
+          card.addEventListener("click", () => {
+            if (!card.dataset.image) return;
+            mapModalImage.src = card.dataset.image;
+            mapModalTitle.textContent = card.dataset.title;
+            mapModal.classList.add("open");
+          });
+        });
+
+        mapModalClose.addEventListener("click", () => {
+          mapModal.classList.remove("open");
+        });
+
+        mapModal.addEventListener("click", event => {
+          if (event.target === mapModal) {
+            mapModal.classList.remove("open");
+          }
+        });
+      }
+    });
+}
+
+const bestiaryContainer = document.querySelector("#bestiaryContainer");
+
+if (bestiaryContainer) {
+  db.collection("bestiary")
+    .get()
+    .then(snapshot => {
+      const beasts = [];
+
+      snapshot.forEach(doc => {
+        beasts.push(doc.data());
+      });
+
+      beasts.sort((a, b) => Number(a.order || 0) - Number(b.order || 0));
+
+      if (!beasts.length) {
+        bestiaryContainer.innerHTML = `
+          <section class="placeholder-panel">
+            <h2>Каталог существ</h2>
+            <p>Здесь появятся карточки существ с иллюстрациями, характеристиками, способностями и связями с историей кампании.</p>
+          </section>
+        `;
+        return;
+      }
+
+      bestiaryContainer.innerHTML = beasts.map(beast => `
+        <article class="codex-card bestiary-card ${beast.image ? "" : "no-image"}">
+          ${beast.image ? `<img src="${beast.image}" alt="${beast.name}">` : ""}
+          <div class="codex-card-body">
+            <span>${beast.type || "Существо"}</span>
+            <h2>${beast.name || "Без названия"}</h2>
+            <p>${beast.summary || ""}</p>
+            <div class="codex-card-meta bestiary-meta">
+              <div><span>Опасность</span><strong>${beast.danger || "—"}</strong></div>
+              <div><span>КД</span><strong>${beast.ac || "—"}</strong></div>
+              <div><span>Хиты</span><strong>${beast.hp || "—"}</strong></div>
+            </div>
+            ${Array.isArray(beast.abilities) && beast.abilities.length ? `
+              <div class="codex-card-text bestiary-abilities">
+                <h3>Способности</h3>
+                <ul>${beast.abilities.map(item => `<li>${item}</li>`).join("")}</ul>
+              </div>
+            ` : ""}
+            <div class="codex-card-text">
+              ${paragraphsHtml(beast.lore)}
+            </div>
+          </div>
+        </article>
+      `).join("");
+    });
+}
+
+const charactersCodex = document.querySelector("#charactersCodex");
+
+if (charactersCodex) {
+  db.collection("characters")
+    .get()
+    .then(snapshot => {
+      const characters = [];
+
+      snapshot.forEach(doc => {
+        characters.push(doc.data());
+      });
+
+      let selectedIndex = 0;
+
+      function abilityBlock(label, ability) {
+        return `
+          <div>
+            <span>${label}</span>
+            <strong>${ability.value}</strong>
+            <em>${ability.mod}</em>
+          </div>
+        `;
+      }
+
+      function companionBlock(companion) {
+        if (!companion) return "";
+
+        return `
+          <section class="wide-section companion-section">
+            <h4>Спутник</h4>
+            <div class="companion-header">
+              <div>
+                <h5>${companion.name}</h5>
+                <p>${companion.type} · ${companion.status}</p>
+              </div>
+            </div>
+            <p>${companion.description}</p>
+            <div class="hero-stats companion-stats">
+              <span>КД <strong>${companion.combat.ac}</strong></span>
+              <span>Хиты <strong>${companion.combat.hp}</strong></span>
+              <span>Скорость <strong>${companion.combat.speed}</strong></span>
+            </div>
+            <div class="ability-grid">
+              ${abilityBlock("Сила", companion.abilities.str)}
+              ${abilityBlock("Ловкость", companion.abilities.dex)}
+              ${abilityBlock("Телосложение", companion.abilities.con)}
+              ${abilityBlock("Интеллект", companion.abilities.int)}
+              ${abilityBlock("Мудрость", companion.abilities.wis)}
+              ${abilityBlock("Харизма", companion.abilities.cha)}
+            </div>
+          </section>
+        `;
+      }
+
+      function renderCharacter(index) {
+        const character = characters[index];
+
+        charactersCodex.innerHTML = `
+          <section class="codex-layout">
+            <aside class="codex-list">
+              <h2>Список</h2>
+              ${characters.map((item, itemIndex) => `
+                <button class="codex-list-item ${itemIndex === index ? "active" : ""}" data-index="${itemIndex}">
+                  <strong>${item.name}</strong>
+                  <span>${item.class} · ${item.role}</span>
+                </button>
+              `).join("")}
+            </aside>
+
+            <article class="codex-profile">
+              <div class="codex-portrait">
+                <img src="${character.image}" alt="${character.name}">
+              </div>
+
+              <div class="codex-info">
+                <p class="codex-label">Досье персонажа</p>
+                <h2>${character.name}</h2>
+
+                <p class="role">
+                  ${character.race} · ${character.class} · ${character.domain} · ${character.god}
+                </p>
+
+                <p class="character-description">${character.description}</p>
+
+                <div class="info-grid">
+                  <div><span>Раса</span><strong>${character.race}</strong></div>
+                  <div><span>Класс</span><strong>${character.class}</strong></div>
+                  <div><span>${character.domainLabel}</span><strong>${character.domain}</strong></div>
+                  <div><span>Покровитель</span><strong>${character.god}</strong></div>
+                  <div><span>Статус</span><strong>${character.status}</strong></div>
+                  <div><span>Роль</span><strong>${character.role}</strong></div>
+                </div>
+
+                <div class="character-section">
+                  <h3>Досье героя</h3>
+
+                  <div class="hero-sections">
+                    <section>
+                      <h4>Характеристики</h4>
+                      <div class="ability-grid">
+                        ${abilityBlock("Сила", character.abilities.str)}
+                        ${abilityBlock("Ловкость", character.abilities.dex)}
+                        ${abilityBlock("Телосложение", character.abilities.con)}
+                        ${abilityBlock("Интеллект", character.abilities.int)}
+                        ${abilityBlock("Мудрость", character.abilities.wis)}
+                        ${abilityBlock("Харизма", character.abilities.cha)}
+                      </div>
+                    </section>
+
+                    <section>
+                      <h4>Боевые данные</h4>
+                      <div class="hero-stats">
+                        <span>Уровень <strong>${character.combat.level}</strong></span>
+                        <span>КД <strong>${character.combat.ac}</strong></span>
+                        <span>Хиты <strong>${character.combat.hp}</strong></span>
+                        <span>Скорость <strong>${character.combat.speed}</strong></span>
+                        <span>Владение <strong>${character.combat.proficiency}</strong></span>
+                        <span>Инициатива <strong>${character.combat.initiative}</strong></span>
+                      </div>
+                    </section>
+
+                    <section>
+                      <h4>Черты характера</h4>
+                      <p>${character.personality}</p>
+                    </section>
+
+                    <section>
+                      <h4>Идеалы</h4>
+                      <p>${character.ideals}</p>
+                    </section>
+
+                    ${companionBlock(character.companion)}
+
+                    <section class="wide-section">
+                      <h4>Полная биография</h4>
+                      <p>${character.biography}</p>
+                    </section>
+                  </div>
+                </div>
+              </div>
+            </article>
+          </section>
+        `;
+
+        document.querySelectorAll(".codex-list-item").forEach(button => {
+          button.addEventListener("click", () => {
+            selectedIndex = Number(button.dataset.index);
+            renderCharacter(selectedIndex);
+          });
+        });
+      }
+
+      renderCharacter(selectedIndex);
+    });
+}
+const journalContainer = document.querySelector("#journalContainer");
+
+if (journalContainer) {
+  db.collection("journal")
+    .get()
+    .then(snapshot => {
+      const entries = [];
+
+      snapshot.forEach(doc => {
+        entries.push(doc.data());
+      });
+
+      entries.sort((a, b) => Number(a.id) - Number(b.id));
+
+      journalContainer.innerHTML = entries.map(entry => `
+        <article class="journal-entry">
+          <button class="journal-header">
+            <div>
+              <span>Сессия ${entry.id}</span>
+              <h2>${entry.title}</h2>
+              <p>${entry.summary}</p>
+            </div>
+            <div class="journal-meta">
+              <strong>${entry.date}</strong>
+              <span class="journal-arrow">▼</span>
+            </div>
+          </button>
+          <div class="journal-content">
+            ${entry.content.map(paragraph => `<p>${paragraph}</p>`).join("")}
+          </div>
+        </article>
+      `).join("");
+
+      document.querySelectorAll(".journal-header").forEach(header => {
+        header.addEventListener("click", () => {
+          header.parentElement.classList.toggle("open");
+        });
+      });
+    });
+}
+
+const questsContainer = document.querySelector("#questsContainer");
+
+if (questsContainer) {
+  db.collection("quests")
+    .get()
+    .then(snapshot => {
+      const quests = [];
+
+      snapshot.forEach(doc => {
+        quests.push(doc.data());
+      });
+
+      quests.sort((a, b) => Number(a.id) - Number(b.id));
+      questsContainer.innerHTML = quests.map(quest => `
+        <article class="quest-card ${quest.status}">
+          <div class="quest-status">${getQuestStatus(quest.status)}</div>
+          <h2>${quest.title}</h2>
+          <p>${quest.description}</p>
+          <div class="quest-info">
+            <div><span>Сложность</span><strong>${quest.difficulty}</strong></div>
+            <div><span>Выдал</span><strong>${quest.giver}</strong></div>
+            <div><span>Награда</span><strong>${quest.reward}</strong></div>
+          </div>
+        </article>
+      `).join("");
+    });
+}
+
+function getQuestStatus(status) {
+  if (status === "active") return "Активный";
+  if (status === "completed") return "Завершён";
+  if (status === "failed") return "Провален";
+  return "Неизвестно";
+}
+
+const mapCards = document.querySelectorAll(".map-card");
+const mapModal = document.querySelector("#mapModal");
+const mapModalImage = document.querySelector("#mapModalImage");
+const mapModalTitle = document.querySelector("#mapModalTitle");
+const mapModalClose = document.querySelector("#mapModalClose");
+
+if (mapCards.length && mapModal) {
+  mapCards.forEach(card => {
+    card.addEventListener("click", () => {
+      mapModalImage.src = card.dataset.image;
+      mapModalTitle.textContent = card.dataset.title;
+      mapModal.classList.add("open");
+    });
+  });
+
+  mapModalClose.addEventListener("click", () => {
+    mapModal.classList.remove("open");
+  });
+
+  mapModal.addEventListener("click", event => {
+    if (event.target === mapModal) {
+      mapModal.classList.remove("open");
+    }
+  });
+}
+
+const diceButtons = document.querySelectorAll(".dice-buttons button");
+const diceResult = document.querySelector("#diceResult");
+const diceHistory = document.querySelector("#diceHistory");
+
+if (diceButtons.length && diceResult && diceHistory) {
+  const history = [];
+
+  diceButtons.forEach(button => {
+    button.addEventListener("click", () => {
+      const sides = Number(button.dataset.dice);
+      let ticks = 0;
+
+      diceResult.classList.remove("critical-success", "critical-fail");
+      diceResult.classList.add("rolling");
+
+      const rollAnimation = setInterval(() => {
+        diceResult.textContent = Math.floor(Math.random() * sides) + 1;
+        ticks++;
+
+        if (ticks >= 14) {
+          clearInterval(rollAnimation);
+
+          const result = Math.floor(Math.random() * sides) + 1;
+          diceResult.textContent = result;
+
+          diceResult.classList.remove("rolling");
+          diceResult.classList.add("roll");
+
+          if (sides === 20 && result === 20) diceResult.classList.add("critical-success");
+          if (sides === 20 && result === 1) diceResult.classList.add("critical-fail");
+
+          history.unshift({ dice: `d${sides}`, result });
+
+          diceHistory.innerHTML = history
+            .slice(0, 10)
+            .map(item => `<li><span>${item.dice}</span><strong>${item.result}</strong></li>`)
+            .join("");
+        }
+      }, 45);
+    });
+  });
+}
+
+const customRollInput = document.querySelector("#customRollInput");
+const customRollButton = document.querySelector("#customRollButton");
+const customRollDetails = document.querySelector("#customRollDetails");
+
+if (customRollInput && customRollButton && customRollDetails && diceHistory && diceResult) {
+  customRollButton.addEventListener("click", () => {
+    const formula = customRollInput.value.trim().toLowerCase();
+    const match = formula.match(/^(\d*)d(\d+)([+-]\d+)?$/);
+
+    if (!match) {
+      customRollDetails.textContent = "Формат неверный. Пример: 2d6+3";
+      return;
+    }
+
+    const count = Number(match[1] || 1);
+    const sides = Number(match[2]);
+    const modifier = Number(match[3] || 0);
+
+    const rolls = [];
+
+    for (let i = 0; i < count; i++) {
+      rolls.push(Math.floor(Math.random() * sides) + 1);
+    }
+
+    const total = rolls.reduce((sum, value) => sum + value, 0) + modifier;
+
+    diceResult.textContent = total;
+
+    customRollDetails.textContent =
+      `${formula}: ${rolls.join(" + ")} ${modifier ? (modifier > 0 ? "+ " + modifier : "- " + Math.abs(modifier)) : ""} = ${total}`;
+
+    diceHistory.innerHTML =
+      `<li><span>${formula}</span><strong>${total}</strong></li>` +
+      diceHistory.innerHTML;
+  });
+}
